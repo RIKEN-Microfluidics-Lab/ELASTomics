@@ -9,11 +9,10 @@ for (icnt in 1:nrow(files)){
   myData <- read.table(file.path(datadir,"count",files[icnt,]), header = TRUE)
   if (encode_barcode==TRUE){
     white<-subset(allencoded,allencoded$batch==str_sub(files[icnt,],1,10))
-    encoded <- whitelist.umi_tools.encode(myData$cell,barcode$V1)
+    encoded <- whitelist.umi_tools.encode(myData$cell,active_barcode$V1)
     myData$cell <- paste0(str_sub(files[icnt,],1,10),"-",encoded$index)
     myData <- myData[encoded$value<1,]
-  }
-  else{
+  }else{
     myData$cell <- paste0(str_sub(files[icnt,],1,10),"-",myData$cell)
   }
   

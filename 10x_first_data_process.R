@@ -1,8 +1,9 @@
 # load functions for barcode decoding
-#source(file.path(rdir,"util/whitelist_encode.R"))
-# laod whitelist and check the batch effect
-#source(file.path(rdir,'preprocess/preprocess_whitelist.R'))
-
+# load functions for barcode decoding
+ source(file.path(rdir,"util/whitelist_encode.R"))
+# # laod whitelist and check the batch effect
+# source(file.path(rdir,'preprocess/preprocess_whitelist.R'))
+# active_barcode <- barcode[sort(unique(allencoded$first_index)),]
 # preprocess the count data and load reference
 encode_barcode=FALSE
 source(file.path(rdir,'preprocess/preprocess_RNAseq_data.R'))
@@ -10,7 +11,7 @@ source(file.path(rdir,'preprocess/preprocess_RNAseq_data.R'))
 # download reference data from ensembl with biomaRt
 gene_list <- unique(data.frame(str_replace(allData$gene,"_intron","")))
 colnames(gene_list) <- "gene"
-source(file.path(rdir,'util/hunter_biomart_ref.R'))
+source(file.path(rdir,'util/get_biomart_ref.R'))
 #hs_ref <- func.biomart.ref(hs_mart,gene_list,"hgnc_symbol")
 filter="ensembl_gene_id"
 #symbol="mgi_symbol"
@@ -25,7 +26,7 @@ if (symbol=="mgi_symbol"){
 }
 
 missing_ref <- subset(gene_list,!(gene %in% ms_ref$ensembl_gene_id))
-adding_ref <- data.frame(cbind(missing_ref$gene,missing_ref$gene,missing_ref$gene,missing_ref$gene,missing_ref$gene))
+adding_ref <- data.frame(cbind(missing_ref$gene,missing_ref$gene,missing_ref$gene,missing_ref$gene,missing_ref$gene,missing_ref$gene))
 colnames(adding_ref) <- colnames(ms_ref)
 rownames(adding_ref) <- adding_ref$ensembl_gene_id
 ms_ref <- rbind(adding_ref,ms_ref)
