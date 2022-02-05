@@ -31,7 +31,11 @@ nep[["condition"]]<-"NEP"
 tig <- merge(ctl, y=nep)
 #
 tig <- NormalizeData(tig, normalization.method = "LogNormalize", scale.factor = 1e5)
-tig <- FindVariableFeatures(tig, selection.method = "vst", nfeatures = 2000)
+# mitochondrial gene percent and remove dead cells
+tig[["percent.mt"]] <- PercentageFeatureSet(tig, pattern = "^MT-")
+tig <- subset(tig, subset= percent.mt<5)
+#
+tig <- FindVariableFeatures(tig, selection.method = "vst", nfeatures = 5000)
 # normalize the dtd data with "RC" option.
 tig <- NormalizeData(tig,assay="DTD",normalization.method = "RC",scale.factor = 1e2)
 #
