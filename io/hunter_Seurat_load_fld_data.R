@@ -2,8 +2,15 @@ library(Seurat)
 library(stringr)
 library(dplyr)
 
-source(file.path(rdir,"preprocess/preprocess_FLD_data.R"))
-FLDmapALL <- load.fld(datadir,"umi_count",barcode,FALSE)
+#source(file.path(rdir,"preprocess/preprocess_FLD_data.R"))
+decode=FALSE
+#FLDmapALL <- load.fld(datadir,"umi_count",barcode,decode)
+sampleID <- list.dirs(path=file.path(datadir,"CITE-seq"), full.names = FALSE, recursive = FALSE)
+samfol = file.path(datadir, "CITE-seq", sampleID[1], count_type,sep="")
+FLD.data <- Read10X(data.dir = samfol, gene.column=1)
+DTD <- CreateSeuratObject(FLD.data,assay="DTD")
+
+
 tagnames <- rownames(FLDmapALL)
 tagnames <- data.frame(strsplit(tagnames,"-"))
 rownames(FLDmapALL) <- tagnames[1,]

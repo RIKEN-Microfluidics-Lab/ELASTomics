@@ -12,36 +12,64 @@ library(Seurat)
 library(SingleCellSignalR)
 library(seqinr)
 library(stringr)
-#library(VennDiagram)
-
-# decode the single cell data from whitelist of UMI-tools output
-datadir <- "/home/samba/sanger/shintaku/20211124HiSeqX006_TIG/"
-datadir1 <- "/home/samba/sanger/Shiomi/20211124HiSeqX006_TIG/"
-datadir2 <-"/home/samba/sanger/shintaku/20220109HiSeqX008_tig/"
-#wdir <- "/home/samba/sanger/shintaku/20210323MiSeq015Ana10X/"
-wdir <- "/home/samba/sanger/Shiomi/20211124HiSeqX006_TIG/"
-rdir <- "/home/samba/sanger/Shiomi/ELASTomics/hunter/"
-
+rdir <- "/home/samba/public/shintaku/github/ELASTomics/"
 #
-# cell_id_list2.txt contains all barcodes
-# cell_id_list.txt contains selected barcodes by GC percent.
-#barcode <- read.table(file.path(rdir,"cell_id_list2.txt"))
-barcode <- read.table(file.path("/home/samba/sanger/Program/cellranger-6.1.2/lib/python/cellranger/barcodes/3M-february-2018.txt"))
-rownames(barcode)<-barcode$V1
-barcode$GC <- as.numeric(lapply(lapply(as.character(barcode$V1),s2c),GC))
-
-# 10x for big data, facs for small data
-source(file.path(rdir,"10x_first_data_process.R"))
-# preprocess FLD data
-source(file.path(rdir,"preprocess/preprocess_FLD_data.R"))
-
+# load ELASTomics data from an output of cellranger with cite-seq pipeline
 #
+source("elast.load.elast.data.R")
+# control data
+wdir <- "/home/samba/sanger/shintaku/20211124HiSeqX006_TIG/CNTRL/outs/filtered_feature_bc_matrix/"
+ctl <-load.elast.data(wdir,"CTL-")
+ctl[["condition"]]<-"CTL"
+# elastomics data
+wdir <- "/home/samba/sanger/shintaku/20211124HiSeqX006_TIG/EP/outs/filtered_feature_bc_matrix/"
+nep <-load.elast.data(wdir,"NEP-")
+nep[["condition"]]<-"NEP"
 #
-# you can restart from here
-# load data from 10x formatted files
-source(file.path(rdir,"/io/hunter_Seurat_load_dataset.R"))
-pbmc <- NormalizeData(pbmc, normalization.method = "LogNormalize", scale.factor = 1e5)
-pbmc <- FindVariableFeatures(pbmc, selection.method = "vst", nfeatures = 2000)
+# merge all the tig data
+#
+tig <- merge(ctl, y=nep)
+#
+tig <- NormalizeData(tig, normalization.method = "LogNormalize", scale.factor = 1e5)
+tig <- FindVariableFeatures(tig, selection.method = "vst", nfeatures = 2000)
+# normalize the dtd data with "RC" option.
+tig <- NormalizeData(tig,assay="DTD",normalization.method = "RC",scale.factor = 1e2)
+VlnPlot(tig,feature="dtd_FLD004",group.by = "condition")
+#subset elastomics data after the normalization
+tig.nep<-subset(tig,subset=condition=="NEP")
+#
+# re-scale the dtd data with the concentration of the dtd molecules in the solution
+# 
+source("elast.rescale.dtd.R")
+concentration<- data.frame(c(2,6,9,3,9,3,1,1,1,1,1,1,1))
+tig.nep<-rescale.dtd.data(tig.nep,concentration)
+tig.dtd.scale <- tig.dtd.scale[c("FLD004","FLD010","FLD070","FLD500"),]
+#
+# compute a radius for a single case
+source("elast.comp.radii.R")
+# fm returns the nls output
+# fm <-elast.comp.radius(tig.dtd.scale[1:4,1],TRUE)
+#
+# compute radii for multipe cases
+# res returns a summary of the computed radii
+res<-elast.comp.radii(tig.dtd.scale[1:4,],FALSE)
+#
+#cellids<-data.frame(colnames(tig.dtd.scale))
+cellids <- matrix(nrow = ncol(tig.dtd.scale), ncol = 4)
+cellids <- data.frame(cellids)
+rownames(cellids)<-colnames(tig.dtd.scale)
+cellids[rownames(res) ,] <- res[,]
+colnames(cellids)<- c("rp","SE","t","pval")
+cellids[is.na(cellids)]<-0
+
+tig.nep[["radii"]]<-cellids$rp
+tig.nep[["se"]]<-cellids$SE
+tig.nep[["pval"]]<-cellids$pval
+
+
+#pbmc <- NormalizeData(pbmc,assay="ADT",normalization.method = "LogNormalize",margin=2,scale.factor = 1e5)
+#pbmc <- ScaleData(pbmc,assay="ADT")
+
 # annotate cells
 source(file.path(rdir,"shiomi_Seurat_annotate_cells.R"))
 
