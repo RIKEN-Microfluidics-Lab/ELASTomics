@@ -1,7 +1,7 @@
 library(stats)
 library(sys)
-elast.comp.radius <- function(DTD.scaled,plot.flag){
-  S.radius <- c(1.4, 2.7, 6.3, 15.1) # Stokes radii of DTD
+# compute a single radius
+elast.comp.radius <- function(DTD.scaled,S.radii,plot.flag){
   a1 <- -1.2167
   a2 <- 1.5336
   a3 <- -22.5083
@@ -24,15 +24,18 @@ elast.comp.radius <- function(DTD.scaled,plot.flag){
   }
   return(fm)
 }
-elast.comp.radii <- function(DTD.scaled,plot.flag){
+#
+# compute multipe radii
+#
+elast.comp.radii <- function(DTD.scaled,S.radii,plot.flag){
   #Calculate pore size
   cellids <- colnames(DTD.scaled)
-  Res <- matrix(nrow = 0, ncol = 4)
+  Res <- matrix(nrow = 0, ncol = 4)# 4 is for the four of outputs
   errorid<-matrix(nrow=0,ncol=0)
   for (t in 1:ncol(DTD.scaled)){
     tryCatch({
       #Rat <- c(DTD.scaled[1:4,t])
-        fm<-elast.comp.radius(c(DTD.scaled[1:4,t]),plot.flag)
+        fm<-elast.comp.radius(c(DTD.scaled[,t]),S.radii,plot.flag)
         f.stat <- summary(fm)$coefficients
         rownames(f.stat) <- cellids[t]
         Res <- rbind(Res, f.stat)
@@ -44,8 +47,6 @@ elast.comp.radii <- function(DTD.scaled,plot.flag){
     )
   }
   Res <- as.data.frame(Res)
-
   return(Res)
-
 }
 
