@@ -6,6 +6,7 @@ elast.integrate.data <- function(tig.nep,res){
   colnames(cellids)<- c("rp","SE","t","pval")
   cellids[is.na(cellids)]<-0
   tig.nep[["radii"]]<-cellids$rp
+  tig.nep[["log.radii"]]<-log(cellids$rp+1e-6)
   tig.nep[["se"]]<-cellids$SE
   tig.nep[["pval"]]<-cellids$pval
   return(tig.nep)

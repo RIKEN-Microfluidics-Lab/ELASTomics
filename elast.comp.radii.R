@@ -16,9 +16,9 @@ elast.comp.radius <- function(DTD.scaled,S.radii,plot.flag){
               a4 * (S.radius/P.radius) +
               a5 * (S.radius/P.radius)^2 +
               a6 * (S.radius/P.radius)^3 +
-              a7 * (S.radius/P.radius)^4),start=c(P.radius=1000),trace = FALSE)
+              a7 * (S.radius/P.radius)^4),start=c(P.radius=20),trace = FALSE)
   if (plot.flag){
-    plot(S.radius,DTD.scaled,xlim=c(0,15),ylim=c(0,20))
+    plot(S.radius,DTD.scaled,xlim=c(0,20),ylim=c(0,20))
     lines(S.radius,predict(fm))
     Sys.sleep(0.1)
   }
