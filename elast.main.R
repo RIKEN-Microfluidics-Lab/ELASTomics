@@ -44,17 +44,21 @@ all.genes <- rownames(tig)
 tig <- ScaleData(tig, features = all.genes)
 tig <- RunPCA(tig, npcs=20, features = VariableFeatures(object = tig))
 DimPlot(tig, reduction = "pca",group.by = "condition")
-
+source("elast.Seurat.clustering.R")
+tig <- RenameIdents(tig, `0` = "TIG1-50", `1` = "TIG1-20", `2` = "Unknown")
 #subset elastomics data after the normalization
 tig.nep<-subset(tig,subset=condition=="NEP")
+DimPlot(tig.nep, label = TRUE)
+#
 #
 # re-scale the dtd data with the concentration of the dtd molecules in the solution
 # 
 source("elast.rescale.dtd.R")
 # FLD004,FLD010,FLD040,FLD070,FLD150,FLD500, and others
+tig.nep <- NormalizeData(tig.nep,assay="DTD",normalization.method = "RC",scale.factor = 1e2)
 concentration<- data.frame(c(2,6,9,3,9,3,1,1,1,1,1,1,1))
 tig.nep<-rescale.dtd.data(tig.nep,concentration)
-tig.dtdd.scale<-tig.nep[["DTD"]]@data
+tig.dtd.scale<-tig.nep[["DTD"]]@data
 tig.dtd.scale <- tig.dtd.scale[c("FLD004","FLD010","FLD070","FLD500"),]
 #
 # compute a radius for a single case
@@ -65,14 +69,22 @@ source("elast.comp.radii.R")
 # The nrow of the tig.dtd.scale must match with the length of S.radii
 #
 S.radii <- c(1.4, 2.7, 6.3, 15.1) # Stokes radii of DTD
-# fm <-elast.comp.radius(tig.dtd.scale[1:4,1],S.radii,TRUE)
+fm <-elast.comp.radius(tig.dtd.scale[1:4,"NEP-CCCTTAGGTCAAACGG"],S.radii,TRUE)
 #
 # compute radii for multipe cases
 res<-elast.comp.radii(tig.dtd.scale[1:4,],S.radii,FALSE)
+Res <- res[[1]]
+dtd.predict<-res[[2]]
 #
 # integrate elast result into Seurat object
 # 
-tig.nep <- elast.integrate.data(tig.nep,res)
+source("elast.integrate.data.R")
+tig.nep <- elast.integrate.data(tig.nep,Res)
+DimPlot(tig.nep,reduction = "pca")+FeaturePlot(tig.nep,features = "radii",
+                                               min.cutoff = 10,
+                                               max.cutoff = 60,reduction = "pca")
+VlnPlot(tig.nep,features = "radii")+scale_y_log10()+ylim(c(1,50))
+
 VlnPlot(tig.nep,features = "pval")+ylim(c(0,0.2))#+scale_y_log10()
 RidgePlot(tig.nep,features="pval")
 FeaturePlot(tig.nep,features = "log.radii")

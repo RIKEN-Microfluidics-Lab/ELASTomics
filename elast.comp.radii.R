@@ -1,7 +1,8 @@
 library(stats)
 library(sys)
 # compute a single radius
-elast.comp.radius <- function(DTD.scaled,S.radii,plot.flag){
+elast.comp.radius <- function(DTD.scaled,S.radius,plot.flag){
+  #DTD.scaled<-tig.dtd.scale[1:4,1]
   a1 <- -1.2167
   a2 <- 1.5336
   a3 <- -22.5083
@@ -31,12 +32,17 @@ elast.comp.radii <- function(DTD.scaled,S.radii,plot.flag){
   #Calculate pore size
   cellids <- colnames(DTD.scaled)
   Res <- matrix(nrow = 0, ncol = 4)# 4 is for the four of outputs
+  dtd.predict <- matrix(nrow=4,ncol=0)
+  rownames(dtd.predict)<-rownames(DTD.scaled)
   errorid<-matrix(nrow=0,ncol=0)
   for (t in 1:ncol(DTD.scaled)){
     tryCatch({
       #Rat <- c(DTD.scaled[1:4,t])
         fm<-elast.comp.radius(c(DTD.scaled[,t]),S.radii,plot.flag)
         f.stat <- summary(fm)$coefficients
+        fm.predict <- data.frame(unlist(predict(fm)))
+        colnames(fm.predict)<-cellids[t]
+        dtd.predict<-cbind(dtd.predict,fm.predict)
         rownames(f.stat) <- cellids[t]
         Res <- rbind(Res, f.stat)
 
@@ -47,6 +53,7 @@ elast.comp.radii <- function(DTD.scaled,S.radii,plot.flag){
     )
   }
   Res <- as.data.frame(Res)
-  return(Res)
+  
+  return(list(Res,dtd.predict))
 }
 
