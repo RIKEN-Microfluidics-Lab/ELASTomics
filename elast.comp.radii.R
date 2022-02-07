@@ -42,6 +42,8 @@ elast.comp.radii <- function(DTD.scaled,S.radii,plot.flag){
         f.stat <- summary(fm)$coefficients
         fm.predict <- data.frame(unlist(predict(fm)))
         colnames(fm.predict)<-cellids[t]
+        weighted.count <- DTD.scaled[,t]/fm.predict
+        print(weighted.count)
         dtd.predict<-cbind(dtd.predict,fm.predict)
         rownames(f.stat) <- cellids[t]
         Res <- rbind(Res, f.stat)

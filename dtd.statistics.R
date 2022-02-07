@@ -1,9 +1,12 @@
 library(reshape2)
 S.radii <- c(1.4, 2.7, 6.3, 15.1)
-tig.nep <- NormalizeData(tig.nep,assay="DTD",normalization.method = "LogNormalize",scale.factor = 1)
+tig.nep <- NormalizeData(tig.nep,assay="DTD",normalization.method = "CLR",scale.factor = 1)
 VlnPlot(tig.nep,features=c("dtd_FLD004","dtd_FLD010","dtd_FLD040","dtd_FLD070","dtd_FLD150","dtd_FLD500"),slot="counts")
 VlnPlot(tig.nep,features=c("dtd_FLD004","dtd_FLD010","dtd_FLD040","dtd_FLD070","dtd_FLD150","dtd_FLD500"))
-DimPlot(tig.nep)+FeaturePlot(tig.nep,features="dtd_FLD004",slot="data")+FeaturePlot(tig.nep,features="dtd_FLD500",slot="data")
+DimPlot(tig.nep)+
+  FeaturePlot(tig.nep,features="DLGAP5",slot="data")+
+  FeaturePlot(tig.nep,features="ITGA8",slot="data")+
+  FeaturePlot(tig.nep,features="dtd_FLD004")
 
 tig.dtd.scale <-tig.nep[["DTD"]]@counts
 tig.dtd.scale<-sweep(as.matrix(tig.dtd.scale),1,as.matrix(concentration),"/")

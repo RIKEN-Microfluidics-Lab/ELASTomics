@@ -44,7 +44,7 @@ all.genes <- rownames(tig)
 tig <- ScaleData(tig, features = all.genes)
 tig <- RunPCA(tig, npcs=20, features = VariableFeatures(object = tig))
 DimPlot(tig, reduction = "pca",group.by = "condition")
-source("elast.Seurat.clustering.R")
+source("Seurat.clustering.R")
 tig <- RenameIdents(tig, `0` = "TIG1-50", `1` = "TIG1-20", `2` = "Unknown")
 #subset elastomics data after the normalization
 tig.nep<-subset(tig,subset=condition=="NEP")
@@ -69,10 +69,10 @@ source("elast.comp.radii.R")
 # The nrow of the tig.dtd.scale must match with the length of S.radii
 #
 S.radii <- c(1.4, 2.7, 6.3, 15.1) # Stokes radii of DTD
-fm <-elast.comp.radius(tig.dtd.scale[1:4,"NEP-CCCTTAGGTCAAACGG"],S.radii,TRUE)
+#fm <-elast.comp.radius(tig.dtd.scale[1:4,"NEP-CCCTTAGGTCAAACGG"],S.radii,TRUE)
 #
 # compute radii for multipe cases
-res<-elast.comp.radii(tig.dtd.scale[1:4,],S.radii,FALSE)
+res<-elast.comp.radii(tig.dtd.scale[1:4,],S.radii,TRUE)
 Res <- res[[1]]
 dtd.predict<-res[[2]]
 #
@@ -89,7 +89,7 @@ VlnPlot(tig.nep,features = "pval")+ylim(c(0,0.2))#+scale_y_log10()
 RidgePlot(tig.nep,features="pval")
 FeaturePlot(tig.nep,features = "log.radii")
 
-source("elast.bulk.tig.mono.vs.co.R")
+source("bulk.tig.mono.vs.co.R")
 DimPlot(tig.bulk.seurat, reduction="pca", group.by = "celltype") + 
   FeaturePlot(tig.bulk.seurat,features = c("HSD17B2","ITGA8","COLEC10","DLGAP5","CENPW","RAD51AP1"))+
   FeaturePlot(tig.nep,features = c("HSD17B2","ITGA8","COLEC10","DLGAP5","CENPW","RAD51AP1"))
