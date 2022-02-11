@@ -19,11 +19,11 @@ rdir <- "/home/samba/public/shintaku/github/ELASTomics/"
 source("elast.load.elast.data.R")
 # control data
 wdir <- "/home/samba/sanger/shintaku/20211124HiSeqX006_TIG/CNTRL/outs/filtered_feature_bc_matrix/"
-ctl <-load.elast.data(wdir,"CTL-")
+ctl <-load.elast.data(wdir,"CTL-",100)
 ctl[["condition"]]<-"CTL"
 # elastomics data
 wdir <- "/home/samba/sanger/shintaku/20211124HiSeqX006_TIG/EP/outs/filtered_feature_bc_matrix/"
-nep <-load.elast.data(wdir,"NEP-")
+nep <-load.elast.data(wdir,"NEP-",100)
 nep[["condition"]]<-"NEP"
 #
 # merge all the tig data
@@ -49,6 +49,16 @@ tig <- RenameIdents(tig, `0` = "TIG1-50", `1` = "TIG1-20", `2` = "Unknown")
 #subset elastomics data after the normalization
 tig.nep<-subset(tig,subset=condition=="NEP")
 DimPlot(tig.nep, label = TRUE)
+#
+# extract explanatory variables via glmnet
+#
+source("elast.glmnet.R")
+en.model.nonzero.beta <- subset(en.model.beta, subset=abs(s0)>0.01)
+#source("elast.biomaRt.R")
+en.model.plus.beta <- subset(en.model.beta, subset=s0> 0.01)
+en.model.minus.beta <- subset(en.model.beta, subset=s0< -0.01)
+
+
 #
 #
 # re-scale the dtd data with the concentration of the dtd molecules in the solution
@@ -93,7 +103,5 @@ source("bulk.tig.mono.vs.co.R")
 DimPlot(tig.bulk.seurat, reduction="pca", group.by = "celltype") + 
   FeaturePlot(tig.bulk.seurat,features = c("HSD17B2","ITGA8","COLEC10","DLGAP5","CENPW","RAD51AP1"))+
   FeaturePlot(tig.nep,features = c("HSD17B2","ITGA8","COLEC10","DLGAP5","CENPW","RAD51AP1"))
-
-
 
 
