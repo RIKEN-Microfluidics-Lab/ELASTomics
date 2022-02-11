@@ -7,23 +7,30 @@
 #
 # gse
 # 
-gene_list <- function(perturbed_gene_HEA,ms_ref){
-  perturbed_gene_HEA_ref <-match(rownames(perturbed_gene_HEA),ms_ref$gene_short_name)
-  perturbed_gene_HEA$entrez <- ms_ref[perturbed_gene_HEA_ref,]$entrez_annotation
-  perturbed_gene_HEA <- perturbed_gene_HEA[!is.na(perturbed_gene_HEA$entrez),]
-  gene_list_log2fc<- unlist(perturbed_gene_HEA$avg_log2FC)
-  names(gene_list_log2fc) <-as.character(perturbed_gene_HEA$entrez)
-  gene_list_log2fc <- gene_list_log2fc[order(gene_list_log2fc,decreasing = T)]
-  return(gene_list_log2fc)
+symbol2entrez.order <- function(genes){
+  SYBOL2EG<-as.data.frame(unlist(org.Hs.egSYMBOL2EG))
+  gene.list <- SYBOL2EG[SYBOL2EG$symbol %in% rownames(genes),]
+  gene.list<-gene.list[!is.na(gene.list$gene_id),]
+  rownames(gene.list) <- gene.list$symbol
+  gene.list$s0 <- genes[rownames(genes) %in% gene.list$symbol,]
+  gene.list <- gene.list[,c(1,3)]
+  #gene_list_log2fc<- unlist(genes$s0)
+  gene_list_order<- unlist(gene.list$s0)
+  names(gene_list_order) <-as.character(gene.list$gene_id)
+  gene_list_order <- gene_list_order[order(gene.list$s0,decreasing = T)]
+  #rownames(gene.list) <-as.character(gene.list$gene_id)
+  #gene_list_log2fc <- gene.list[order(gene.list$s0,decreasing = T),]
+  return(gene_list_order)
+  #return(gene.list)
 }
-gene_list_log2fc <- gene_list(elp.markers,ms_ref)
+genes <-en.model.nonzero.beta
+gene_list_log2fc <- symbol2entrez.order(genes)
 #
 # try BP: biological process, CC: cellular component, or MF: molecular function
 gse_result<- gseGO(geneList     = gene_list_log2fc,
                    OrgDb        = org.Hs.eg.db,
                    ont          = "CC",
                    minGSSize    = 12,
-                   pvalueCutoff = 0.4,
                    pAdjustMethod = "BH",
                    verbose      = FALSE)
 

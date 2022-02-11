@@ -7,38 +7,38 @@
 library("org.Hs.eg.db")
 library(clusterProfiler)
 #
-ensmusg <- data.frame(unlist(as.list(org.Hs.egENSEMBL2EG)))
-# entrez annotation
-ms_ref$entrez_annotation <- ensmusg[ms_ref$ensembl_gene_id,]
-
-
-perturbed_gene_HEA.entrez_annotation <- ms_ref_subset[ms_ref_subset$gene_short_name %in% rownames(perturbed_gene_HEA),]
-perturbed_gene_RG.entrez_annotation <- ms_ref_subset[ms_ref_subset$gene_short_name %in% rownames(perturbed_gene_RG),]
-perturbed_gene_elp.entrez_annotation <- ms_ref_subset[ms_ref_subset$gene_short_name %in% rownames(perturbed_gene_elp),]
-
-#
 # https://bioc.ism.ac.jp/packages/3.3/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.html
 #
 # clusterProfiler
-# 
-#gene_module_go <- allLLIDs[moduleColors_subset=="pink"]
-
-ego_result <- enrichGO(gene          = perturbed_gene_elp.entrez_annotation$entrez_annotation, 
+#
+symbol2entrez<-function(gene.symbol){
+  SYBOL2EG<-as.data.frame(unlist(org.Hs.egSYMBOL2EG))
+  gene.list <- SYBOL2EG[SYBOL2EG$symbol %in% gene.symbol,]
+  gene.list<-gene.list[!is.na(gene.list$gene_id),]
+  return(gene.list)
+}
+gene.list<-symbol2entrez(rownames(en.model.nonzero.beta))
+ego_result <- enrichGO(gene          = gene.list$gene_id, 
                        OrgDb         = org.Hs.eg.db,
                        ont           = "CC",
                          pAdjustMethod = "BH",
-                       pvalueCutoff  = 0.05,
-                       qvalueCutoff  = 0.05, 
+                       pvalueCutoff  = 0.1,
+                       qvalueCutoff  = 0.1, 
                        readable      = TRUE)
+barplot(ego_result, drop=TRUE)
+#ego_result.simple<-simplify(ego_result)
 head(as.data.frame(ego_result))
-ego_result.simple<-simplify(ego_result)
-head(as.data.frame(ego_result.simple))
-barplot(ego_result, drop=TRUE, showCategory=30)
 #https://www.rdocumentation.org/packages/clusterProfiler/versions/3.0.4/topics/compareCluster
-perturbed_gene_list <- list(RG=perturbed_gene_RG.entrez_annotation$entrez_annotation,HEA=perturbed_gene_HEA.entrez_annotation$entrez_annotation)
-xx <- compareCluster(perturbed_gene_list, fun="groupGO",
-                     OrgDb         = org.Hs.eg.db)
-summary(xx)
+
+gene.plus.list<-symbol2entrez(rownames(en.model.plus.beta))
+gene.minus.list<-symbol2entrez(rownames(en.model.minus.beta))
+gene.list <- list(plus=gene.plus.list$gene_id,
+                  minus=gene.minus.list$gene_id)
+xx <- compareCluster(gene.list, fun="groupGO",
+                     OrgDb         = org.Hs.eg.db,
+                     ont           = "CC")
+#summary(xx)
+dotplot(xx)
 #clusterProfiler::dotplot(ego_result)
 #clusterProfiler::emapplot(ego_result.simple)
 #clusterProfiler::cnetplot(ego_result, categoryS ize="pvalue")
