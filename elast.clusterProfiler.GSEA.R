@@ -14,14 +14,10 @@ symbol2entrez.order <- function(genes){
   rownames(gene.list) <- gene.list$symbol
   gene.list$s0 <- genes[rownames(genes) %in% gene.list$symbol,]
   gene.list <- gene.list[,c(1,3)]
-  #gene_list_log2fc<- unlist(genes$s0)
   gene_list_order<- unlist(gene.list$s0)
   names(gene_list_order) <-as.character(gene.list$gene_id)
   gene_list_order <- gene_list_order[order(gene.list$s0,decreasing = T)]
-  #rownames(gene.list) <-as.character(gene.list$gene_id)
-  #gene_list_log2fc <- gene.list[order(gene.list$s0,decreasing = T),]
   return(gene_list_order)
-  #return(gene.list)
 }
 genes <-en.model.nonzero.beta
 gene_list_log2fc <- symbol2entrez.order(genes)

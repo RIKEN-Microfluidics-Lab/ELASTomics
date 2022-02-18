@@ -37,6 +37,12 @@ DimPlot(tig.bulk.seurat, reduction = "pca",group.by = "celltype")+
 DimPlot(tig.bulk.seurat, reduction = "pca",group.by = "culture")
 
 Idents(object = tig.bulk.seurat) <- tig.bulk.seurat[["celltype"]]
+
+tig.bulk.seurat<- CellCycleScoring(tig.bulk.seurat,g2m.features = g2m_genes,s.features = s_genes,set.ident = TRUE)
+DimPlot(tig.bulk.seurat,reduction="pca",group.by = "celltype")+
+  DimPlot(tig.bulk.seurat,reduction="pca")
+
+
 tig.mono <-subset(tig.bulk.seurat,subset=culture=="mono")
 tig.de.markers <- FindMarkers(tig.bulk.seurat, ident.1 = "tig20", ident.2 = "tig50")
 tig.de.markers[ abs(tig.de.markers$avg_log2FC)>1.0,]

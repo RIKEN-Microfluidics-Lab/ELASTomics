@@ -1,7 +1,5 @@
 require(readr)
-library(plyr)
-library(dplyr)
-library(tidyr)
+library(plyr,dplyr,tidyr)
 library(ggplot2)
 library(tidyverse)
 library(R.utils)
@@ -19,28 +17,37 @@ rdir <- "/home/samba/public/shintaku/github/ELASTomics/"
 source("elast.load.elast.data.R")
 # control data
 wdir <- "/home/samba/sanger/shintaku/20211124HiSeqX006_TIG/CNTRL/outs/filtered_feature_bc_matrix/"
-ctl <-load.elast.data(wdir,"CTL-",100)
+ctl <-load.elast.data(wdir,"CTL-",1000)
 ctl[["condition"]]<-"CTL"
 # elastomics data
 wdir <- "/home/samba/sanger/shintaku/20211124HiSeqX006_TIG/EP/outs/filtered_feature_bc_matrix/"
-nep <-load.elast.data(wdir,"NEP-",100)
+nep <-load.elast.data(wdir,"NEP-",1000)
 nep[["condition"]]<-"NEP"
 #
-# merge all the tig data
-#
 tig <- merge(ctl, y=nep)
-#
 tig <- NormalizeData(tig, normalization.method = "LogNormalize", scale.factor = 1e5)
 # mitochondrial gene percent and remove dead cells
 tig[["percent.mt"]] <- PercentageFeatureSet(tig, pattern = "^MT-")
 tig <- subset(tig, subset= percent.mt<5)
 #
-tig <- FindVariableFeatures(tig, selection.method = "vst", nfeatures = 5000)
+#
+# merge all the tig data
+#
+
+tig <- FindVariableFeatures(tig, selection.method = "vst", nfeatures = 300)
+# Identify the 10 most highly variable genes
+top10 <- head(VariableFeatures(tig), 40)
+# plot variable features with labels
+plot1 <- VariableFeaturePlot(tig)
+plot1 <- LabelPoints(plot = tig, points = top10)
+plot1
 # normalize the dtd data with "RC" option.
-tig <- NormalizeData(tig,assay="DTD",normalization.method = "RC",scale.factor = 1e2)
+tig <- NormalizeData(tig,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
+#
+
 #
 # PCA and visualize
-all.genes <- rownames(tig)
+all.genes <- rownames(tig.combined)
 tig <- ScaleData(tig, features = all.genes)
 tig <- RunPCA(tig, npcs=20, features = VariableFeatures(object = tig))
 DimPlot(tig, reduction = "pca",group.by = "condition")
@@ -48,15 +55,16 @@ source("Seurat.clustering.R")
 tig <- RenameIdents(tig, `0` = "TIG1-50", `1` = "TIG1-20", `2` = "Unknown")
 #subset elastomics data after the normalization
 tig.nep<-subset(tig,subset=condition=="NEP")
+tig.ctl<-subset(tig,subset=condition=="CTL")
 DimPlot(tig.nep, label = TRUE)
 #
 # extract explanatory variables via glmnet
 #
 source("elast.glmnet.R")
-en.model.nonzero.beta <- subset(en.model.beta, subset=abs(s0)>0.01)
+en.model.nonzero.beta <- subset(en.model.beta, subset=abs(s0)>0.001)
 #source("elast.biomaRt.R")
-en.model.plus.beta <- subset(en.model.beta, subset=s0> 0.01)
-en.model.minus.beta <- subset(en.model.beta, subset=s0< -0.01)
+en.model.plus.beta <- subset(en.model.beta, subset=s0> 0.001)
+en.model.minus.beta <- subset(en.model.beta, subset=s0< -0.001)
 
 
 #

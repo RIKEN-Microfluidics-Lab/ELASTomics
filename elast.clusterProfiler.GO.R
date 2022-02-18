@@ -17,10 +17,10 @@ symbol2entrez<-function(gene.symbol){
   gene.list<-gene.list[!is.na(gene.list$gene_id),]
   return(gene.list)
 }
-gene.list<-symbol2entrez(rownames(en.model.nonzero.beta))
+gene.list<-symbol2entrez(en.model.beta$gene)
 ego_result <- enrichGO(gene          = gene.list$gene_id, 
                        OrgDb         = org.Hs.eg.db,
-                       ont           = "CC",
+                       ont           = "MF",
                          pAdjustMethod = "BH",
                        pvalueCutoff  = 0.1,
                        qvalueCutoff  = 0.1, 
@@ -36,7 +36,7 @@ gene.list <- list(plus=gene.plus.list$gene_id,
                   minus=gene.minus.list$gene_id)
 xx <- compareCluster(gene.list, fun="groupGO",
                      OrgDb         = org.Hs.eg.db,
-                     ont           = "CC")
+                     ont           = "BP")
 #summary(xx)
 dotplot(xx)
 #clusterProfiler::dotplot(ego_result)

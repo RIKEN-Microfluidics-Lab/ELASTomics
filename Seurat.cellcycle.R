@@ -8,7 +8,11 @@ genes <- fucci_cellcycle_genes(sub_ref)
 cell_cycle_markers<-genes[[1]]
 s_genes <- genes[[2]]
 g2m_genes <- genes[[3]]
-tig <- CellCycleScoring(tig,g2m.features = g2m_genes,s.features = s_genes,set.ident = TRUE)
+tig.bulk.seurat<- CellCycleScoring(tig.bulk.seurat,g2m.features = g2m_genes,s.features = s_genes,set.ident = TRUE)
+DimPlot(tig.bulk.seurat,reduction="pca",group.by = "celltype")+
+DimPlot(tig.bulk.seurat,reduction="pca")
+
+
 tig$CC.Difference <- tig$S.Score - tig$G2M.Score
 #tig<- ScaleData(tig, vars.to.regress = c("S.Score", "G2M.Score"), features = c(s_genes, g2m_genes))
 
