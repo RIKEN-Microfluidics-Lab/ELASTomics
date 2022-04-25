@@ -7,38 +7,52 @@
 #
 # gse
 # 
+library("org.Hs.eg.db")
+library(clusterProfiler)
 symbol2entrez.order <- function(genes){
   SYBOL2EG<-as.data.frame(unlist(org.Hs.egSYMBOL2EG))
   gene.list <- SYBOL2EG[SYBOL2EG$symbol %in% rownames(genes),]
   gene.list<-gene.list[!is.na(gene.list$gene_id),]
+  gene.list <- gene.list[!duplicated(gene.list$symbol),]
+  #geneset <- genemap[!duplicated(genemap[,1]), 2]
   rownames(gene.list) <- gene.list$symbol
-  gene.list$s0 <- genes[rownames(genes) %in% gene.list$symbol,]
+  #gene.list$s0 <- genes[gene.list$symbol,1]
+  gene.list$s0 <- genes[gene.list$symbol,1]
   gene.list <- gene.list[,c(1,3)]
   gene_list_order<- unlist(gene.list$s0)
   names(gene_list_order) <-as.character(gene.list$gene_id)
   gene_list_order <- gene_list_order[order(gene.list$s0,decreasing = T)]
   return(gene_list_order)
 }
-genes <-en.model.nonzero.beta
-gene_list_log2fc <- symbol2entrez.order(genes)
+
+gene_list_log2fc <- symbol2entrez.order(cors)
 #
 # try BP: biological process, CC: cellular component, or MF: molecular function
 gse_result<- gseGO(geneList     = gene_list_log2fc,
                    OrgDb        = org.Hs.eg.db,
-                   ont          = "CC",
+                   ont          = "BP",
                    minGSSize    = 12,
                    pAdjustMethod = "BH",
+                   pvalueCutoff = 0.05,
                    verbose      = FALSE)
-
 ridgeplot(gse_result,showCategory = 20)
-#d <- GOSemSim::godata("org.Hs.eg.db", ont = "BP")    
-#compare_cluster_GO_emap <- enrichplot::pairwise_termsim(gse_result, semData = d,  method="Wang")
-#emapplot(compare_cluster_GO_emap, showCategory = 8)
+View(gse_result@result)
+
+gene_list <- unlist(strsplit(gse_result@result[gse_result@result$Description=="response to chemical",]$core_enrichment,"/"))
+SYBOL2EG<-as.data.frame(unlist(org.Hs.egSYMBOL2EG))
+gene_list_name <- SYBOL2EG[SYBOL2EG$gene_id %in% gene_list,]
 
 #
 # kegg
 #
-kk <- gseKEGG(gene_list_log2fc, nPerm=10000)
+kk <- gseKEGG(gene_list_log2fc,
+              organism = "hsa", keyType = "kegg",
+              exponent = 1, minGSSize = 10,
+              maxGSSize = 500, pvalueCutoff = 1,
+              pAdjustMethod = "BH", verbose = TRUE,
+              use_internal_data = FALSE, seed = FALSE)
+
+
 ridgeplot(kk)
 gseaplot2(kk, geneSetID =1, title = kk$Description[1])
 kk <- gseMKEGG(gene_list_log2fc, nPerm=10000)

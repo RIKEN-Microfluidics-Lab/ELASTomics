@@ -1,9 +1,7 @@
 require(readr)
 library(plyr,dplyr,tidyr)
 library(ggplot2)
-library(tidyverse)
-library(R.utils)
-library(RCurl)
+library(tidyverse,R.utils, RCurl)
 library(Matrix)
 library(openxlsx)
 library(Seurat)
@@ -17,11 +15,11 @@ rdir <- "/home/samba/public/shintaku/github/ELASTomics/"
 source("elast.load.elast.data.R")
 # control data
 wdir <- "/home/samba/sanger/shintaku/20211124HiSeqX006_TIG/CNTRL/outs/filtered_feature_bc_matrix/"
-ctl <-load.elast.data(wdir,"CTL-",1000)
+ctl <-load.elast.data(wdir,"CTL-",100)
 ctl[["condition"]]<-"CTL"
 # elastomics data
 wdir <- "/home/samba/sanger/shintaku/20211124HiSeqX006_TIG/EP/outs/filtered_feature_bc_matrix/"
-nep <-load.elast.data(wdir,"NEP-",1000)
+nep <-load.elast.data(wdir,"NEP-",100)
 nep[["condition"]]<-"NEP"
 #
 tig <- merge(ctl, y=nep)
@@ -33,7 +31,6 @@ tig <- subset(tig, subset= percent.mt<5)
 #
 # merge all the tig data
 #
-
 tig <- FindVariableFeatures(tig, selection.method = "vst", nfeatures = 300)
 # Identify the 10 most highly variable genes
 top10 <- head(VariableFeatures(tig), 40)
@@ -44,15 +41,13 @@ plot1
 # normalize the dtd data with "RC" option.
 tig <- NormalizeData(tig,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
 #
-
-#
 # PCA and visualize
-all.genes <- rownames(tig.combined)
+all.genes <- rownames(tig)
 tig <- ScaleData(tig, features = all.genes)
 tig <- RunPCA(tig, npcs=20, features = VariableFeatures(object = tig))
 DimPlot(tig, reduction = "pca",group.by = "condition")
 source("Seurat.clustering.R")
-tig <- RenameIdents(tig, `0` = "TIG1-50", `1` = "TIG1-20", `2` = "Unknown")
+
 #subset elastomics data after the normalization
 tig.nep<-subset(tig,subset=condition=="NEP")
 tig.ctl<-subset(tig,subset=condition=="CTL")
@@ -73,11 +68,14 @@ en.model.minus.beta <- subset(en.model.beta, subset=s0< -0.001)
 # 
 source("elast.rescale.dtd.R")
 # FLD004,FLD010,FLD040,FLD070,FLD150,FLD500, and others
-tig.nep <- NormalizeData(tig.nep,assay="DTD",normalization.method = "RC",scale.factor = 1e2)
+tig.combined.nep <- NormalizeData(tig.combined.nep,assay="DTD",normalization.method = "RC",scale.factor = 1e2)
 concentration<- data.frame(c(2,6,9,3,9,3,1,1,1,1,1,1,1))
-tig.nep<-rescale.dtd.data(tig.nep,concentration)
-tig.dtd.scale<-tig.nep[["DTD"]]@data
-tig.dtd.scale <- tig.dtd.scale[c("FLD004","FLD010","FLD070","FLD500"),]
+tig.combined.nep<-rescale.dtd.data(tig.combined.nep,concentration)
+
+tig.dtd.scale<-tig.combined.nep[["DTD"]]@data
+#tig.dtd.scale <- tig.dtd.scale[c("FLD004","FLD010","FLD070","FLD500"),]
+
+
 #
 # compute a radius for a single case
 source("elast.comp.radii.R")

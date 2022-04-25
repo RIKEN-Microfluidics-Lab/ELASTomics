@@ -1,13 +1,16 @@
+
 source(file.path(rdir,"elast.biomaRt.R"))
 source(file.path(rdir,"util/fucci_cellcycle_genes.R"))
 
-
 sub_ref <- ref %>%
   dplyr::filter(gene_short_name %in% rownames(tig))
+
 genes <- fucci_cellcycle_genes(sub_ref)
 cell_cycle_markers<-genes[[1]]
 s_genes <- genes[[2]]
 g2m_genes <- genes[[3]]
+
+
 tig.bulk.seurat<- CellCycleScoring(tig.bulk.seurat,g2m.features = g2m_genes,s.features = s_genes,set.ident = TRUE)
 DimPlot(tig.bulk.seurat,reduction="pca",group.by = "celltype")+
 DimPlot(tig.bulk.seurat,reduction="pca")

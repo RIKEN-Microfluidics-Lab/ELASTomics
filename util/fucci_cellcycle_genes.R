@@ -1,3 +1,4 @@
+library(RCurl)
 fucci_cellcycle_genes <- function(hs_ref){
 cc_file <- getURL("https://raw.githubusercontent.com/hbc/tinyatlas/master/cell_cycle/Homo_sapiens.csv") 
 cell_cycle_genes <- read.csv(text = cc_file)
@@ -12,12 +13,12 @@ cell_cycle_markers <- cell_cycle_markers[!is.na(cell_cycle_markers$gene_short_na
 # Acquire the S phase genes
 s_genes <- cell_cycle_markers %>% 
   dplyr::filter(phase == "S") %>% 
-  pull("gene_short_name")
+  dplyr::pull("gene_short_name")
 s_genes <- s_genes[!is.na(s_genes)]
 # Acquire the G2M phase genes        
 g2m_genes <- cell_cycle_markers %>%
   dplyr::filter(phase == "G2/M") %>%
-  pull("gene_short_name")
+  dplyr::pull("gene_short_name")
 g2m_genes <- g2m_genes[!is.na(g2m_genes)]
 
 return(list(cell_cycle_markers,s_genes,g2m_genes))
