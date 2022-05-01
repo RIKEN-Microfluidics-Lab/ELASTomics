@@ -24,7 +24,7 @@ whitelist.umi_tools.list <- function(whitelist,barcode){
 #  romin <- whitelist.umi_tools.encode(extracted$third,barcode)
 #  encoded3 <- romin
   total <- romin$value#+encoded2$value+encoded3$value
-  encoded <- data.frame(cbind(extracted,romin,total,extracted$count))
+  encoded <- data.frame(cbind(extracted$first,romin,total,extracted$count))
   colnames(encoded)<- c("first_barcode","first","first_index","lv_total","count")
   return(encoded)
 }

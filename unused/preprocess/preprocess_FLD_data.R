@@ -1,3 +1,4 @@
+library(dplyr)
 load.fld <- function(datadir,count_type,barcode,decode){
   sampleID <- list.dirs(path=file.path(datadir,"CITE-seq"), full.names = FALSE, recursive = FALSE)
   for (i in 1:length(sampleID)){

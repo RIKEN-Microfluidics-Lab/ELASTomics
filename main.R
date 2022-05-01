@@ -87,23 +87,34 @@ source("elast.comp.radii.R")
 S.radii <- c(1.4, 2.7, 6.3, 15.1) # Stokes radii of DTD
 #fm <-elast.comp.radius(tig.dtd.scale[1:4,"NEP-CCCTTAGGTCAAACGG"],S.radii,TRUE)
 #
-# compute radii for multipe cases
+# compute radii for multiple cases
 res<-elast.comp.radii(tig.dtd.scale[1:4,],S.radii,TRUE)
 Res <- res[[1]]
 dtd.predict<-res[[2]]
 #
 # integrate elast result into Seurat object
 # 
-source("elast.integrate.data.R")
-tig.nep <- elast.integrate.data(tig.nep,Res)
-DimPlot(tig.nep,reduction = "pca")+FeaturePlot(tig.nep,features = "radii",
-                                               min.cutoff = 10,
-                                               max.cutoff = 60,reduction = "pca")
-VlnPlot(tig.nep,features = "radii")+scale_y_log10()+ylim(c(1,50))
 
-VlnPlot(tig.nep,features = "pval")+ylim(c(0,0.2))#+scale_y_log10()
-RidgePlot(tig.nep,features="pval")
-FeaturePlot(tig.nep,features = "log.radii")
+source("elast.integrated.R.R")
+
+source(file.path(rdir,"elast.integrated.cor.visualize.R"))
+
+source(file.path(rdir,"elast.integrated.cor.R"))
+
+source(file.path(rdir,"elast.integrated.cor.visualize.R"))
+
+source(file.path(rdir,"elast.integrated.cor.diffusionmap.R"))
+
+# source("elast.integrate.data.R")
+# tig.nep <- elast.integrate.data(tig.nep,Res)
+# DimPlot(tig.nep,reduction = "pca")+FeaturePlot(tig.nep,features = "radii",
+#                                                min.cutoff = 10,
+#                                                max.cutoff = 60,reduction = "pca")
+# VlnPlot(tig.nep,features = "radii")+scale_y_log10()+ylim(c(1,50))
+# 
+# VlnPlot(tig.nep,features = "pval")+ylim(c(0,0.2))#+scale_y_log10()
+# RidgePlot(tig.nep,features="pval")
+# FeaturePlot(tig.nep,features = "log.radii")
 
 source("bulk.tig.mono.vs.co.R")
 DimPlot(tig.bulk.seurat, reduction="pca", group.by = "celltype") + 

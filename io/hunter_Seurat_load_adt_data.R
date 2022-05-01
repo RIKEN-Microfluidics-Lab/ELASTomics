@@ -34,7 +34,7 @@ adt.csv <- do.call("cbind",adt.xlsx)
 seladt.csv <- adt.csv[,cellids] # extract cells detected in RNA-seq
 seladt.csv[is.na(seladt.csv)] <- 0
 pbmc.adt <-as.sparse(seladt.csv) # convert the format to sparse matrix
-pbmc[["ADT"]] <- CreateAssayObject(counts=pbmc.adt)
+
 
 #pbmc <- NormalizeData(pbmc,assay="ADT",normalization.method = "LogNormalize",scale.factor = 1e5)
 #pbmc <- NormalizeData(pbmc,assay="ADT",normalization.method = "LogNormalize",margin=2,scale.factor = 1e5)
@@ -42,4 +42,4 @@ pbmc[["ADT"]] <- CreateAssayObject(counts=pbmc.adt)
 
 #pbmc <- ScaleData(pbmc,assay="ADT")
 
-rm(batch,indexfiles,channels,adt.xlsx,adt.csv,seladt.csv,pbmc.adt,channel)
+rm(batch,indexfiles,channels,adt.xlsx,adt.csv,seladt.csv,channel)

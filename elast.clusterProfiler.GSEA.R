@@ -37,11 +37,12 @@ gse_result<- gseGO(geneList     = gene_list_log2fc,
                    verbose      = FALSE)
 ridgeplot(gse_result,showCategory = 20)
 View(gse_result@result)
+gseaplot(gse_result, geneSetID = 1, by = "runningScore", title = kk$Description[1])
 
-gene_list <- unlist(strsplit(gse_result@result[gse_result@result$Description=="response to chemical",]$core_enrichment,"/"))
+gene_list <- unlist(strsplit(gse_result@result[gse_result@result$Description=="aging",]$core_enrichment,"/"))
 SYBOL2EG<-as.data.frame(unlist(org.Hs.egSYMBOL2EG))
 gene_list_name <- SYBOL2EG[SYBOL2EG$gene_id %in% gene_list,]
-
+gene_list_name
 #
 # kegg
 #
@@ -54,12 +55,21 @@ kk <- gseKEGG(gene_list_log2fc,
 
 
 ridgeplot(kk)
-gseaplot2(kk, geneSetID =1, title = kk$Description[1])
+View(kk@result)
+gseaplot(kk, geneSetID =11, title = kk$Description[11])
+gene_list <- unlist(strsplit(kk@result[kk@result$Description=="NF-kappa B signaling pathway",]$core_enrichment,"/"))
+SYBOL2EG<-as.data.frame(unlist(org.Hs.egSYMBOL2EG))
+gene_list_name <- SYBOL2EG[SYBOL2EG$gene_id %in% gene_list,]
+gene_list_name
+
 kk <- gseMKEGG(gene_list_log2fc, nPerm=10000)
 ridgeplot(kk)
 #gseaplot(kk, geneSetID = 1, by = "runningScore", title = kk$Description[1])
-gseaplot2(kk, geneSetID =1, title = kk$Description[1])
+gseaplot(kk, geneSetID =1, title = kk$Description[1])
 #
 #
 #
-#browseKEGG(kk,)
+browseKEGG(kk,pathID="hsa04064")
+library(pathview)
+pathview(gene.data = gene_list_log2fc, pathway.id = "hsa04110",
+         limit = list(gene=1, cpd=1))

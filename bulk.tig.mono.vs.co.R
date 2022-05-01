@@ -39,10 +39,22 @@ DimPlot(tig.bulk.seurat, reduction = "pca",group.by = "celltype")+
 
 tig.bulk.seurat[["type_culture"]]<- paste0(unlist(tig.bulk.seurat[["celltype"]]),"_",unlist(tig.bulk.seurat[["culture"]]))
 
-Idents(tig.bulk.seurat)<-tig.bulk.seurat[["type_culture"]]
+Idents(tig.bulk.seurat)<-tig.bulk.seurat[["culture"]]
 
-tig.marker <- FindMarkers(tig.combined.ctl,ident.1 = "TIG1-50",ident.2 = "TIG1-20", test.use = "wilcox",
+tig.marker <- FindMarkers(subset(tig.bulk.seurat,subset=celltype=="tig20"),ident.1 = "co",ident.2 = "mono", test.use = "wilcox",
                           print.bar = TRUE, only.pos = FALSE, max.cells.per.ident = Inf)
+tig.marker<-data.frame(tig.marker)
+tig.marker$gene <-rownames(tig.marker)
+View(tig.marker)
+p1<-VlnPlot(subset(tig.bulk.seurat,subset=celltype=="tig20"), features = "RRAD",group.by = "culture")+ylim(c(0,2.5))
+p2<-VlnPlot(subset(tig.bulk.seurat,subset=celltype=="tig50"), features = "RRAD",group.by = "culture")+ylim(c(0,2.5))
+p3<-VlnPlot(subset(tig.bulk.seurat,subset=celltype=="tig20"), features = "RHOB",group.by = "culture")+ylim(c(0,2.5))
+p4<-VlnPlot(subset(tig.bulk.seurat,subset=celltype=="tig50"), features = "RHOB",group.by = "culture")+ylim(c(0,2.5))
+p5<-VlnPlot(subset(tig.bulk.seurat,subset=celltype=="tig20"), features = "ACTB",group.by = "culture")+ylim(c(0,5))
+p6<-VlnPlot(subset(tig.bulk.seurat,subset=celltype=="tig50"), features = "ACTB",group.by = "culture")+ylim(c(0,5))
+p7<-VlnPlot(subset(tig.bulk.seurat,subset=celltype=="tig20"), features = "GADD45B",group.by = "culture")+ylim(c(0,2.5))
+p8<-VlnPlot(subset(tig.bulk.seurat,subset=celltype=="tig50"), features = "GADD45B",group.by = "culture")+ylim(c(0,2.5))
+gridExtra::grid.arrange(p1, p2,p3, p4, p5, p6,p7,p8,nrow = 4)
 
 symbol2entrez<-function(gene.symbol){
   SYBOL2EG<-as.data.frame(unlist(org.Hs.egSYMBOL2EG))
@@ -121,3 +133,34 @@ ggplot(tig.de.markers,aes(y=-log(p_val),x=avg_log2FC))+geom_point()
 
 DimPlot(tig.bulk.seurat, reduction="pca", group.by = "celltype") + 
   FeaturePlot(tig.bulk.seurat,features = c("HSD17B2","ITGA8","COLEC10","DLGAP5","CENPW","RAD51AP1"))
+#
+#  plot senescence levels of TIG-1 cell populations
+#
+age <- tig.bulk.seurat[["celltype"]]
+culture <- tig.bulk.seurat[["culture"]]
+#colnames(age)<-c("celltype","culture")
+cellids<-colnames(tig.bulk.seurat)
+age<-data.frame(paste0(unlist(age),".",unlist(culture)))
+rownames(age)<-colnames(tig.bulk.seurat)
+colnames(age)<-"sample"
+
+exp.matrix<-data.frame(tig.bulk.seurat[["RNA"]]@data)
+exp.matrix.age<-exp.matrix[rownames(exp.matrix) %in% aging_gene,]
+exp.matrix.cor<-exp.matrix[rownames(exp.matrix) %in% cors.sig$gene,]
+dm.age <- DiffusionMap(data.frame(t(exp.matrix.age)))
+dm.cor <- DiffusionMap(data.frame(t(exp.matrix.cor)))
+age$dm.age<-dm.age$DC1
+age$dm.cor<-dm.cor$DC1
+p1<-ggplot(age,aes(x=factor(sample,levels=c("tig20.mono","tig20.co","tig50.co","tig50.mono")),y=dm.age))+geom_violin()+geom_jitter()
+p2<-ggplot(age,aes(x=factor(sample,levels=c("tig20.mono","tig20.co","tig50.co","tig50.mono")),y=-dm.cor))+geom_violin()+geom_jitter()
+
+gridExtra::grid.arrange(p1, p2, nrow = 2)
+
+
+pheatmap(exp.matrix[,order(dm$DC1,decreasing = FALSE)],
+         scale="row",
+         cluster_cols = FALSE,
+         annotation_col = age,
+         show_colnames = FALSE)
+age$DC1<-dm$DC1
+ggplot(age,aes(x=age,y=-DC1))+geom_violin()+geom_jitter(size=0.1)
