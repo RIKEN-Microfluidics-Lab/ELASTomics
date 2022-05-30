@@ -18,7 +18,9 @@ pheatmap(exp.matrix[,order(dm$DC1,decreasing = FALSE)],
          annotation_col = age,
          show_colnames = FALSE)
 age$DC1<-dm$DC1
-ggplot(age,aes(x=age,y=-DC1))+geom_violin()+geom_jitter(size=0.1)
+palette.colors(palette = "Okabe-Ito")
+ggplot(age,aes(x=age,y=DC1,fill=age))+geom_violin()+geom_jitter(size=0.1)+
+  scale_fill_manual(values = c( "#0072B2","#D55E00"))+ theme_bw()
 
 #tig.combined.nep <- RenameIdents(tig.combined.nep, `0` = "TIG1-50", `1` = "TIG1-20")
 #

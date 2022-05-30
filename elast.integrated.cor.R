@@ -29,10 +29,13 @@ cors[cors$gene %in% anti_aging_genes,]$bool<-TRUE
 
 ggplot(cors,aes(x=rank,y=cors,label=gene))+geom_point()+
   geom_point(data=subset(cors,pval<1e-10),aes(x=rank,y=cors, color = "red"))+
-  geom_label_repel(data=subset(cors,bool==TRUE),aes(rank,cors,label=gene))
+  geom_text_repel(data=subset(cors,bool==TRUE),aes(rank,cors,label=gene))+theme_bw()
 
-
+#
+# heatmap of correlated genes
+#
 cors.sig<-subset(subset(cors,subset=pval<1e-10),subset=abs(cors)>0.2)
+
 exp.matrix <- data.frame(tig.combined.nep[["integrated"]]@data)
 dtd <-FetchData(object = tig.combined.nep, vars = c("dtd_FLD500"))
 rownames(dtd)<-colnames(exp.matrix)
@@ -60,9 +63,9 @@ ego_result <- enrichGO(gene          = gene.list$gene_id,
                        readable      = TRUE)
 barplot(ego_result, drop=TRUE)
 View(ego_result@result)
-FeatureScatter(tig.combined.nep,feature1 = "dtd_FLD500",feature2 = "IER2",group.by = "age")+
-  FeatureScatter(tig.combined.nep,feature1 = "dtd_FLD500",feature2 = "GNG11",group.by = "age")+
-  FeatureScatter(tig.combined.nep,feature1 = "dtd_FLD500",feature2 = "PAICS",group.by = "age")
+# FeatureScatter(tig.combined.nep,feature1 = "dtd_FLD500",feature2 = "IER2",group.by = "age")+
+#   FeatureScatter(tig.combined.nep,feature1 = "dtd_FLD500",feature2 = "GNG11",group.by = "age")+
+#   FeatureScatter(tig.combined.nep,feature1 = "dtd_FLD500",feature2 = "PAICS",group.by = "age")
 
 clust_genes <- data.frame(clust_genes)
 clust_genes$cors <- cors[rownames(clust_genes),]$cors
@@ -87,6 +90,9 @@ ggplot(cors,aes(x=rank,y=cors,label=gene))+geom_point()+
   geom_point(data=subset(cors,bool==2),aes(x=rank-3,y=cors, colour = "2"))+
   geom_label_repel(data=subset(cors,bool==1),aes(rank,cors,label=gene))
 
+#
+# heatmap and clustering
+#
 library(reshape2)
 
 clust1.exp <- exp.matrix[rownames(exp.matrix) %in% clust3_genes,]
@@ -104,4 +110,10 @@ p3+p1+p2
 clust2.exp <- exp.matrix[rownames(exp.matrix) %in% clust2_genes,]
 clust3.exp <- exp.matrix[rownames(exp.matrix) %in% clust3_genes,]
 
-
+library(gplots)
+senescence <-aging_gene
+cor_gene <- cors.sig$gene
+sasp<-c("YWHAH","SMC3","RAN","PAICS","NCL","MYH9","MSN","HSPD1","HNRNPDL","HNRNPAB","HMGA1","FABP5","CORO1C",
+        "TIMP1","TFPI2","STOM","QSOX1","MFGE8","MFAP4","KLF4","IGFBP4","HLA.B","DCN")
+data <- list(senescence = aging_gene, elast =cors.sig$gene,sasp=sasp)
+venn(data)

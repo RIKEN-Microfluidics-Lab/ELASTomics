@@ -41,6 +41,12 @@ tig.combined <- NormalizeData(tig.combined,assay="DTD",normalization.method = "C
 tig.combined.nep <- subset(tig.combined,subset=condition=="NEP")
 tig.combined.ctl <- subset(tig.combined,subset=condition=="CTL")
 
+p1<-DimPlot(tig.combined,reduction="pca",group.by = "condition",pt.size=0.01)+
+scale_color_manual(values = c("#0072B2","#D55E00"))
+p2<-DimPlot(tig.combined.nep,reduction="pca")+
+  scale_color_manual(values = c("#0072B2","#D55E00"))
+p3<-FeaturePlot(tig.combined.nep,features = "dtd_FLD500",reductio="pca")
+  p1+p2+p3
 #
 # find tig aging marker genes
 tig.marker <- FindMarkers(tig.combined.nep,ident.1 = "TIG1-50",ident.2 = "TIG1-20", test.use = "wilcox", min.pct = 0.0,
