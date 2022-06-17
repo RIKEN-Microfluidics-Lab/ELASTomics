@@ -14,11 +14,11 @@ rdir <- "/home/samba/public/shintaku/github/ELASTomics/"
 #
 source("elast.load.elast.data.R")
 # control data
-wdir <- "/home/samba/sanger/shintaku/20211124HiSeqX006_TIG/CNTRL/outs/filtered_feature_bc_matrix/"
+wdir <- "/home/samba/sanger/shintaku/ELASTomics/20211124HiSeqX006_TIG/CNTRL/outs/filtered_feature_bc_matrix/"
 ctl <-load.elast.data(wdir,"CTL-",100)
 ctl[["condition"]]<-"CTL"
 # elastomics data
-wdir <- "/home/samba/sanger/shintaku/20211124HiSeqX006_TIG/EP/outs/filtered_feature_bc_matrix/"
+wdir <- "/home/samba/sanger/shintaku/ELASTomics/20211124HiSeqX006_TIG/EP/outs/filtered_feature_bc_matrix/"
 nep <-load.elast.data(wdir,"NEP-",100)
 nep[["condition"]]<-"NEP"
 #
