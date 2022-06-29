@@ -6,8 +6,6 @@ symbol="hgnc_symbol"
 #filter="ensembl_gene_id"
 filter="hgnc_symbol"
 #filter="mgi_symbol"
-# download reference data from ensembl with biomaRt
-gene_list <- data.frame(unique(rownames(tig)))
 colnames(gene_list) <- "gene"
 #
 source(file.path(rdir,'util/get_biomart_ref.R'))

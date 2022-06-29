@@ -16,7 +16,6 @@ symbol2entrez.order <- function(genes){
   gene.list <- gene.list[!duplicated(gene.list$symbol),]
   #geneset <- genemap[!duplicated(genemap[,1]), 2]
   rownames(gene.list) <- gene.list$symbol
-  #gene.list$s0 <- genes[gene.list$symbol,1]
   gene.list$s0 <- genes[gene.list$symbol,1]
   gene.list <- gene.list[,c(1,3)]
   gene_list_order<- unlist(gene.list$s0)

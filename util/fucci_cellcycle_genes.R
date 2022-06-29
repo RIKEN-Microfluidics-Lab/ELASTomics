@@ -1,7 +1,8 @@
 library(RCurl)
 fucci_cellcycle_genes <- function(hs_ref){
-cc_file <- getURL("https://raw.githubusercontent.com/hbc/tinyatlas/master/cell_cycle/Homo_sapiens.csv") 
-cell_cycle_genes <- read.csv(text = cc_file)
+#cc_file <- getURL("https://raw.githubusercontent.com/hbc/tinyatlas/master/cell_cycle/Homo_sapiens.csv") 
+  cc_file<-file.path("/home/samba/public/shintaku/github/ELASTomics/Homo_sapiens.csv")
+cell_cycle_genes <- read.csv(cc_file)
 
 cell_cycle_markers <- dplyr::left_join(cell_cycle_genes,hs_ref,by=c("geneID"="ensembl_gene_id"))
 cell_cycle_markers <- cell_cycle_markers[!is.na(cell_cycle_markers$gene_short_name),]

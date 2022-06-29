@@ -1,9 +1,11 @@
 
+# download reference data from ensembl with biomaRt
+gene_list <- data.frame(unique(rownames(cancer_merge)))
 source(file.path(rdir,"elast.biomaRt.R"))
 source(file.path(rdir,"util/fucci_cellcycle_genes.R"))
 
 sub_ref <- ref %>%
-  dplyr::filter(gene_short_name %in% rownames(tig))
+  dplyr::filter(gene_short_name %in% rownames(cancer_merge))
 
 genes <- fucci_cellcycle_genes(sub_ref)
 cell_cycle_markers<-genes[[1]]
@@ -11,10 +13,11 @@ s_genes <- genes[[2]]
 g2m_genes <- genes[[3]]
 
 
-tig.bulk.seurat<- CellCycleScoring(tig.bulk.seurat,g2m.features = g2m_genes,s.features = s_genes,set.ident = TRUE)
-DimPlot(tig.bulk.seurat,reduction="pca",group.by = "celltype")+
-DimPlot(tig.bulk.seurat,reduction="pca")
-
+#tig.bulk.seurat<- CellCycleScoring(tig.bulk.seurat,g2m.features = g2m_genes,s.features = s_genes,set.ident = TRUE)
+#DimPlot(tig.bulk.seurat,reduction="pca",group.by = "celltype")+
+#DimPlot(tig.bulk.seurat,reduction="pca")
+cancer_merge<-CellCycleScoring(cancer_merge,g2m.features = g2m_genes,s.features = s_genes,set.ident = TRUE)
+FeaturePlot(cancer_merge,features = c("S.Score","G2M.Score","dtd_FLD004"),reduction="tsne")
 
 tig$CC.Difference <- tig$S.Score - tig$G2M.Score
 #tig<- ScaleData(tig, vars.to.regress = c("S.Score", "G2M.Score"), features = c(s_genes, g2m_genes))

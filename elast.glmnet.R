@@ -7,7 +7,9 @@ var.gene <- data.frame(VariableFeatures(tig.combined.nep))
 
 tig.combined.nep <- NormalizeData(tig.combined.nep,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
 response <- data.frame(t(data.frame(tig.combined.nep[["DTD"]]@data)))
+
 response <- FetchData(tig.combined.nep,"RRAD",slot="data")
+
 rownames(response) <- rownames(exp.matrix)
 #cor(exp.matrix$FOSB, exp.matrix$FOS)
 cors <-apply(exp.matrix,2,function(x){cor(response$RRAD,x)})
