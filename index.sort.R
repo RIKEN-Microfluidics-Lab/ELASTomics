@@ -2,6 +2,8 @@ datadir <- "/home/samba/sanger/shintaku/ELASTomics/20220922HiSeqX015_index"
 index <- Read10X(data.dir = datadir)
 index.dtd <- Read10X(data.dir = file.path(datadir,"CITE-seq"))
 
+index.dtd.control<- index.dtd[,str_sub(colnames(index.dtd),1,10) == "Ind-DTDmix"]
+
 index.dtd.subset <- index.dtd[,str_sub(colnames(index.dtd),9,21) %in% str_sub(colnames(index),9,21)]
 index.subset <- index[,str_sub(colnames(index),9,21) %in% str_sub(colnames(index.dtd),9,21)]
 colnames(index.subset) <- paste0("MF10Indc",str_sub(colnames(index.subset),9,21))
@@ -52,4 +54,5 @@ index.seurat <- NormalizeData(index.seurat,normalization.method ="CLR",assay = "
 index.seurat <- NormalizeData(index.seurat,normalization.method ="CLR",assay = "facs")
 
 # "FLD004-AACGTGAT" "FLD010-AAACATCG" "FLD040-ATGCCTAA" "FLD070-AGTGGTCA" "FLD150-ACCACTGT" "FLD500-ACATTGGC"
-FeatureScatter(index.seurat,feature1="facs_Venus",feature2="FLD070-AGTGGTCA")
+FeatureScatter(index.seurat,feature1="facs_Venus",feature2="FLD150-ACCACTGT")
+VlnPlot(index.seurat,features=c("FLD004-AACGTGAT","FLD010-AAACATCG","FLD040-ATGCCTAA","FLD070-AGTGGTCA","FLD150-ACCACTGT","FLD500-ACATTGGC"),slot="counts")
