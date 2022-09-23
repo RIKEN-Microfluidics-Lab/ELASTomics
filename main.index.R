@@ -18,7 +18,10 @@ source(file.path(rdir,"util/whitelist_encode.R"))
 # laod whitelist and check the batch effect
 source(file.path(rdir,'unused/preprocess/preprocess_whitelist.R'))
 active_barcode <- barcode[sort(unique(allencoded$first_index)),]
-encode_barcode=TRUE
+encode_barcode=FALSE
+source("unused/preprocess/preprocess_RNAseq_data.R")
+source("unused/preprocess/preprocess_save_10x_format.R")
+
 index.sort <- Read10X(data.dir = wdir)
 index.sort <-CreateSeuratObject(index.sort)
 cellids <- colnames(index.sort)

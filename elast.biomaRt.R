@@ -22,7 +22,7 @@ if (symbol=="mgi_symbol"){
   ref <- unique(func.biomart.ref(rgd_mart,gene_list,filter,symbol))
 }
 
-rm(gene_list)
+#rm(gene_list)
 #missing_ref <- subset(gene_list,!(gene %in% ref$ensembl_gene_id))
 #adding_ref <- data.frame(cbind(missing_ref$gene,missing_ref$gene,missing_ref$gene,missing_ref$gene,missing_ref$gene,missing_ref$gene))
 #colnames(adding_ref) <- colnames(ref)

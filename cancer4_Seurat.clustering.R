@@ -104,6 +104,7 @@ cancer_merge1234 <- RunTSNE(cancer_merge1234,dims=1:10)
                 features = c("percent.mt"),
                 reduction = "tsne",
                 max.cutoff = 10)
+    
     p3<-DimPlot(subset(subset(cancer_merge1234,subset=percent.mt<10),subset=condition=="normal"),reduction = "tsne",group.by = "celltype")
     p4<-DimPlot(subset(cancer_merge1234,subset=condition=="normal"),reduction = "tsne",group.by = "NEP")
     p5<-DimPlot(subset(subset(cancer_merge1234,subset=percent.mt<10),subset=condition=="normal"),reduction = "tsne",group.by = "NEP")

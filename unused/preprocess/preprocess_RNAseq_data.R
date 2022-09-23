@@ -1,4 +1,3 @@
-
 # load count data
 #datadir <- dir #"/home/watson/sanger/shintaku/20210216HiSeqX002/count/"
 files <- data.frame(list.files(file.path(datadir,"count"),pattern="counts.tsv.gz"))

@@ -34,7 +34,7 @@ ggplot(cors,aes(x=rank,y=cors,label=gene))+geom_point()+
 #
 # heatmap of correlated genes
 #
-cors.sig<-subset(subset(cors,subset=pval<1e-10),subset=abs(cors)>0.2)
+cors.sig<-subset(subset(cors,subset=pval<1e-10),subset=abs(cors)>0.05)
 
 exp.matrix <- data.frame(tig.combined.nep[["integrated"]]@data)
 dtd <-FetchData(object = tig.combined.nep, vars = c("dtd_FLD500"))

@@ -16,44 +16,48 @@ rdir <- "/home/samba/public/shintaku/github/ELASTomics/"
 #
 source("elast.load.elast.data.R")
 # control data
-wdir <- "/home/samba/sanger/shintaku/ELASTomics/20211124HiSeqX006_TIG/CNTRL/outs/filtered_feature_bc_matrix/"
-ctl <-load.elast.data(wdir,"CTL-",100)
-ctl[["condition"]]<-"CTL"
-# elastomics data
-wdir <- "/home/samba/sanger/shintaku/ELASTomics/20211124HiSeqX006_TIG/EP/outs/filtered_feature_bc_matrix/"
+wdir <- "/home/samba/sanger/shintaku/ELASTomics/20220719HiSeqX014_10x/mhsc_1_14c_2/outs/filtered_feature_bc_matrix/"
 nep <-load.elast.data(wdir,"NEP-",100)
-nep[["condition"]]<-"NEP"
+#nep[["condition"]]<-"NEP"
 #
-tig <- merge(ctl, y=nep)
-tig <- NormalizeData(tig, normalization.method = "LogNormalize", scale.factor = 1e5)
+nep <- NormalizeData(nep, normalization.method = "LogNormalize", scale.factor = 1e5)
 # mitochondrial gene percent and remove dead cells
-tig[["percent.mt"]] <- PercentageFeatureSet(tig, pattern = "^MT-")
-tig <- subset(tig, subset= percent.mt<5)
+nep[["percent.mt"]] <- PercentageFeatureSet(nep, pattern = "^mt-")
+nep <- subset(nep, subset= percent.mt<5)
+nep <- subset(nep,subset=nCount_RNA >1000)
 #
 #
 # merge all the tig data
 #
-tig <- FindVariableFeatures(tig, selection.method = "vst", nfeatures = 300)
+nep <- FindVariableFeatures(nep, selection.method = "vst", nfeatures = 300)
 # Identify the 10 most highly variable genes
-top10 <- head(VariableFeatures(tig), 40)
+top10 <- head(VariableFeatures(nep), 40)
 # plot variable features with labels
-plot1 <- VariableFeaturePlot(tig)
-plot1 <- LabelPoints(plot = tig, points = top10)
+plot1 <- VariableFeaturePlot(nep)
+plot1 <- LabelPoints(plot = nep, points = top10)
 plot1
 # normalize the dtd data with "RC" option.
-tig <- NormalizeData(tig,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
+nep <- NormalizeData(nep,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
 #
 # PCA and visualize
-all.genes <- rownames(tig)
-tig <- ScaleData(tig, features = all.genes)
-tig <- RunPCA(tig, npcs=20, features = VariableFeatures(object = tig))
-DimPlot(tig, reduction = "pca",group.by = "condition")
-source("Seurat.clustering.R")
+all.genes <- rownames(nep)
+nep <- ScaleData(nep, features = all.genes)
+nep <- RunPCA(nep, npcs=20, features = VariableFeatures(object = nep))
+DimPlot(nep, reduction = "pca",group.by = "condition")
+#source("Seurat.clustering.R")
+JackStrawPlot(nep, dims = 1:20)
+ElbowPlot(nep)
+
+nep <- FindNeighbors(nep, dims = 1:18)
+nep <- FindClusters(nep, resolution = 0.3)
+
+nep <- RunUMAP(nep, dims = 1:19)
+FeaturePlot(nep,features = c("Plek","Cebpa","Epor","Hlf","Mpo","Spib","Cd79a","Dntt","Mpl","Pf4","Vwf","Itga2b","dtd_ADT130","dtd_FLD004","nFeature_RNA"),reduction="umap")+DimPlot(nep)
+FeaturePlot(nep,features="dtd_FLD004",max.cutoff = 2)
 
 #subset elastomics data after the normalization
 tig.nep<-subset(tig,subset=condition=="NEP")
 tig.ctl<-subset(tig,subset=condition=="CTL")
-DimPlot(tig.nep, label = TRUE)
 
 #
 #

@@ -22,10 +22,10 @@ tig.combined <- FindClusters(tig.combined, resolution = 0.1)
 tig.combined <- RenameIdents(tig.combined, `0` = "TIG1-50", `1` = "TIG1-20")
 tig.combined[["age"]] <- Idents(tig.combined)
 
-DimPlot(tig, reduction = "umap",group.by = "condition")+
-  DimPlot(tig, reduction = "umap")+
-  DimPlot(tig.combined, reduction = "umap", group.by = "condition")+
-  DimPlot(tig.combined, reduction = "umap", label = TRUE, repel = TRUE)
+DimPlot(tig, reduction = "pca",group.by = "condition")+
+  DimPlot(tig, reduction = "pca")+
+  DimPlot(tig.combined, reduction = "pca", group.by = "condition")+
+  DimPlot(tig.combined, reduction = "pca", label = TRUE, repel = TRUE)
 
 FeaturePlot(tig.combined,features = c("HSD17B2","ITGA8","COLEC10","DLGAP5","CENPW","dtd_FLD040"), reduction = "umap")
 

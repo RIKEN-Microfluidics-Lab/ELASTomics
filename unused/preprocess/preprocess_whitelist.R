@@ -2,6 +2,10 @@ library(ggplot2)
 library(stringr)
 library(reshape2)
 library(gridExtra)
+source("./util/whitelist_encode.R")
+barcode <- read.table(file.path("/home/samba/sanger/shintaku/github/hunter/cell_id_list.txt"))
+barcode$GC <- as.numeric(lapply(lapply(as.character(barcode$V1),s2c),GC))
+
 # create a list of whitelist files
 filelist_whitelist <- data.frame(list.files(datadir,pattern="whitelist.txt"))
 colnames(filelist_whitelist) <- c("filename")

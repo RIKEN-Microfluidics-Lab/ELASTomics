@@ -93,7 +93,7 @@ FeatureScatter(subset(cancer_merge1234, subset = percent.mt < 10 & nCount_RNA>=2
                  group.by = "celltype",slot="counts")+xlim(c(0,10000))+ylim(c(0,10000))+
   FeatureScatter(subset(cancer_merge1234, subset = percent.mt < 10 & nCount_RNA>=2000 & run=="forth"),feature1 = "dtd_M1AE31",feature2 = "dtd_P3ME34",
                  group.by = "celltype",slot="counts")+xlim(c(0,10000))+ylim(c(0,10000))
-
+cancer_merge <- subset(subset(cancer_merge1234,subset=NEP=="75V",invert=TRUE),subset=condition=="normal")
 
 # RidgePlot(subset(cancer_merge,subset=celltype=="MCF10A"),features = "dtd_FLD004",group.by = "NEP")+
 #   RidgePlot(subset(cancer_merge,subset=celltype=="MCF7"),features = "dtd_FLD004",group.by = "NEP")+
@@ -153,6 +153,7 @@ DimPlot(subset(cancer_merge,subset=condition=="normal"),
 #
 # mcf10a subset 
   mcf10a <- subset(cancer_merge,subset=celltype=="MCF10A" | celltype=="MCF7")
+  
   Idents(mcf10a)<-mcf10a[["NEP"]]
   mcf10a<-NormalizeData(mcf10a,assay="RNA",normalization.method = "LogNormalize", scale.factor = 1e5)
   mcf_nep <- FindMarkers(mcf10a,ident.1 = "40V",ident.2 = "0V")
@@ -178,7 +179,8 @@ DimPlot(subset(cancer_merge,subset=condition=="normal"),
   summary(xx)
   dotplot(xx)
 #
-  mcf10a.list <- SplitObject(mcf10a, split.by = "NEP")
+  
+  mcf10a.list <- SplitObject(cancer_merge, split.by = "NEP")
   mcf10a.list <- lapply(X =  mcf10a.list, FUN = function(x) {
     x <- NormalizeData(x)
     x <- FindVariableFeatures(x, selection.method = "vst", nfeatures = 1000)
@@ -192,15 +194,15 @@ DimPlot(subset(cancer_merge,subset=condition=="normal"),
   mcf10a.combined <- ScaleData(mcf10a.combined, features = all.genes)
   mcf10a.combined <- RunPCA(mcf10a.combined, npcs=20, features = VariableFeatures(object = mcf10a.combined))
   mcf10a.combined <- RunTSNE(mcf10a.combined,dims=1:10)
-  FeaturePlot(mcf10a.combined,features = c("TFF1","KRT19","DSCAM-AS1",
-                                           "KRT8","KRT18","COX6C","H3F3B",
-                                           "PARD6B","S100A10","PSMA7","percent.mt"),
-              reduction="tsne",
-              slot="data")+
+  FeaturePlot(mcf10a.combined,
+              features = c("TFF1","KRT19","DSCAM-AS1",
+                           "KRT8","KRT18","COX6C","H3F3B",
+                           "PARD6B","S100A10","PSMA7","percent.mt"),reduction="tsne",slot="data")+
     FeaturePlot(mcf10a.combined,features = "dtd_FLD004",reduction="tsne",max.cutoff = 2)+
-    DimPlot(mcf10a.combined,reduction="tsne",group.by = "NEP")
-# correlation
-  cancer_merge_40V <- subset(mcf10a.combined,subset=NEP=="40V")
+    DimPlot(mcf10a.combined,reduction="tsne",group.by = "NEP")+
+    DimPlot(mcf10a.combined,reduction="tsne",group.by = "celltype")
+  # correlation
+  cancer_merge_40V <- subset(mcf10a.combined,subset=NEP=="40V" & celltype=="PC3")
   exp.matrix <- t(data.frame(cancer_merge_40V[["integrated"]]@data))
   var.gene <- data.frame(VariableFeatures(cancer_merge_40V))
   response <- data.frame(t(data.frame(cancer_merge_40V[["DTD"]]@data)))
@@ -211,6 +213,32 @@ DimPlot(subset(cancer_merge,subset=condition=="normal"),
   cors$gene <-rownames(cors)
   cors<-cors[!is.na(cors$cors),]
   cors$rank <-rank(cors$cors)
+  pc3cor<-cors
+  mcf10acor<-cors
+  mcf7cor<-cors
+  mdamb231cor <- cors
+
+  gene.list <-data.frame(unique(c(mdamb231cor$gene,pc3cor$gene,mcf7cor$gene,mcf10acor$gene)))
+  colnames(gene.list)<-"gene"
+  rownames(gene.list)<-gene.list$gene
+  gene.list$mbamb231 <- mdamb231cor[gene.list$gene,]$cors
+  gene.list$pc3 <- pc3cor[gene.list$gene,]$cors
+  gene.list$mcf7 <- mcf7cor[gene.list$gene,]$cors
+  gene.list$mcf10a <- mcf10acor[gene.list$gene,]$cors
+  
+  gene.list.z <- data.frame(scale(gene.list[complete.cases(gene.list),colnames(gene.list) != "gene"]))
+  
+  pheatmap(gene.list[complete.cases(gene.list),colnames(gene.list) != "gene"])
+  
+  gene.list.z$Mean <-rowMeans(gene.list.z)
+  pheatmap(gene.list.z)
+  
+  ggplot(melt(gene.list.z,id.vars="Mean"),aes(x=Mean, y= value,color=variable))+geom_point()
+  
+  pheatmap(gene.list.z[abs(gene.list.z$Mean)>0.0,colnames(gene.list.z) != "Mean"])
+  #gene.list.z[abs(gene.list.z$Mean)>1.2,]
+  View(cors)
+  
   
   #neg.cors<-subset(cors,subset=cors < -0.15)
   pos.cors <- cors %>% top_n(100,cors)
@@ -221,8 +249,9 @@ DimPlot(subset(cancer_merge,subset=condition=="normal"),
   mcf10a.combined <- ScaleData(mcf10a.combined, features = all.genes)
   mcf10a.combined <- RunPCA(mcf10a.combined, npcs=20, features = cors[cors$bool==TRUE,]$gene)
   mcf10a.combined <- RunTSNE(mcf10a.combined,dims=1:10)
-  FeaturePlot(subset(mcf10a.combined,subset=NEP=="40V"),features = c("CALM1","GNAS","KCNJ3",
-                                                                     "KRT18","KRT19","TFF1","NCOA3","nFeature_RNA"),
+  FeaturePlot(subset(mcf10a.combined,subset=NEP=="40V"),
+              features = c("CALM1","GNAS","KCNJ3",
+                           "KRT18","KRT19","TFF1","NCOA3","nFeature_RNA"),
               reduction="tsne",
               slot="data")+
     FeaturePlot(subset(mcf10a.combined,subset=NEP=="40V"),features = "dtd_FLD004",reduction="tsne")+
@@ -272,12 +301,19 @@ DimPlot(subset(cancer_merge,subset=condition=="normal"),
   
   #
   
-mcf10a<-subset(subset(cancer_merge,subset=NEP=="40V"),subset=celltype=="MCF10A")
+mcf10a<-subset(subset(cancer_subset,subset=NEP=="0V"),subset=celltype=="MCF10A")
 mcf10a_dtd <-data.frame(t(mcf10a[["DTD"]]@counts))
 library(reshape2)
 mcf10a_dtd_melt<-melt(mcf10a_dtd,measure.vars = c("FLD004","FLD010","FLD040","FLD070","FLD150","FLD500"),value.name = "Counts")
-ggplot(mcf10a_dtd_melt,aes(x=variable,y=Counts))+geom_violin()+geom_jitter()+ 
+ggplot(mcf10a_dtd_melt,aes(x=variable,y=Counts))+geom_violin()+geom_jitter(size=0.1)+ 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
-        legend.position="none")
+        legend.position="none")+scale_y_log10()
 rm(mcf10a,mcf10a_dtd,mcf10a_dtd_melt)
+
+#
+# DTD controls
+#
+cancer1_dtd <- Read10X(data.dir = "/home/samba/sanger/shintaku/ELASTomics/20220603HiSeqX010_011/CITE-seq/AS-ele-DTD/read_count/",gene.column = 1)
+cancer2_dtd <- Read10X(data.dir = "/home/samba/sanger/shintaku/ELASTomics/20220719HiSeqX014_10x/CITE-seq/02-ele-DTD/umi_count/",gene.column = 1)
+mhsc_dtd <- Read10X(data.dir = "/home/samba/sanger/shintaku/ELASTomics/20220719HiSeqX014_10x/CITE-seq/03-ele-DTD/umi_count/",gene.column = 1)
