@@ -5,6 +5,7 @@ index.dtd <- Read10X(data.dir = file.path(datadir,"CITE-seq"))
 index.dtd.control<- index.dtd[,str_sub(colnames(index.dtd),1,10) == "Ind-DTDmix"]
 
 index.dtd.subset <- index.dtd[,str_sub(colnames(index.dtd),9,21) %in% str_sub(colnames(index),9,21)]
+
 index.subset <- index[,str_sub(colnames(index),9,21) %in% str_sub(colnames(index.dtd),9,21)]
 colnames(index.subset) <- paste0("MF10Indc",str_sub(colnames(index.subset),9,21))
 colnames(index.dtd.subset) <- paste0("MF10Indc",str_sub(colnames(index.dtd.subset),9,21))
