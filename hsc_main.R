@@ -51,35 +51,76 @@ source("Seurat.clustering.R")
 JackStrawPlot(tig, dims = 1:20)
 ElbowPlot(tig)
 
-tig <- FindNeighbors(tig, dims = 1:10)
-tig <- FindClusters(tig, resolution = 0.2)
+#Celltype
+tig <- FindNeighbors(tig, dims = 1:18)
+tig <- FindClusters(tig, resolution = 0.8)
 DimPlot(tig, label = FALSE)
-
-#Gene expression
-tig <- RunUMAP(tig, dims = 1:19)
-DimPlot(tig, label = FALSE)
-markers.DTD <- FindMarkers(tig, ident.1 = 18, min.pct = 0.25)
-FeaturePlot(tig,features = rownames(markers.DTD)[13:24], reduction="umap")
-
-FeaturePlot(tig,features = c("Hlf", "Rgs1","Irf8"),reduction="umap")
-FeaturePlot(tig,features = c("Pf4", "Itga2b","Klf4"),reduction="umap")
-FeaturePlot(tig,features = c("Elane", "Anxa2", "Mmp9"),reduction="umap")
-FeaturePlot(tig,features = c("Klf1","Hba-a1", "Cd79a"),reduction="umap")
-FeaturePlot(tig,features = c("Hectd4"),reduction="umap")
-
-new.cluster.ids <- c("Mono", "Gra", "GMP", "MPP", "preCFU-E",  "DC", "Other", "preCFU-E")
+new.cluster.ids <- c("Gra", "Gra", "Gra","Gra", "GMP", "Mono","Gra", "EryP", "MMP","Erythroid", "CMP", "Bcell","Bcell", "Erythroid", "CLP","Gra", "CMP", "Other","Other")
 names(new.cluster.ids) <- levels(tig)
 tig <- RenameIdents(tig, new.cluster.ids)
-DimPlot(tig, reduction = "umap", label =FALSE, pt.size = 0.5) + NoLegend()
+tig[["Celltype"]] <- Idents(tig)
 
+#CMP or MkP
+tig1 <- subset(tig, idents = c("CMP"))
+tig1 <- FindNeighbors(tig1, dims = 1:10)
+tig1 <- FindClusters(tig1, resolution = 0.2)
+DimPlot(tig1, label = FALSE)
+new.cluster.ids <- c("MkP", "CMP", "CMP","CMP")
+names(new.cluster.ids) <- levels(tig1)
+tig1 <- RenameIdents(tig1, new.cluster.ids)
+tig1[["Celltype"]] <- Idents(tig1)
+
+#HSC or MMP
+tig2 <- subset(tig, idents = c("MMP"))
+tig2 <- FindNeighbors(tig2, dims = 1:20)
+tig2 <- FindClusters(tig2, resolution = 0.8)
+DimPlot(tig2, label = FALSE)
+new.cluster.ids <- c("HSC", "MMP", "MMP", "MMP", "MMP")
+names(new.cluster.ids) <- levels(tig2)
+tig2 <- RenameIdents(tig2, new.cluster.ids)
+tig2[["Celltype"]] <- Idents(tig2)
+
+#Reconstruction
+tig3 <- subset(tig, idents = c("CMP", "MMP"), invert = TRUE)
+tig12 <- merge(tig1, y=tig2)
+tig4 <- merge(tig3, y=tig12)
+tig4 <- FindVariableFeatures(tig4, selection.method = "vst", nfeatures = 300)
+all.genes <- rownames(tig4)
+tig4 <- ScaleData(tig4, features = all.genes)
+tig4 <- RunPCA(tig4, npcs=20, features = VariableFeatures(object = tig4))
+#tig4 <- FindNeighbors(tig4, dims = 1:19)
+#tig4 <- FindClusters(tig4, resolution = 0.1)
+tig4 <- RunUMAP(tig4, dims = 1:19)
+DimPlot(tig, reduction = "umap", label =TRUE, pt.size = 0.5, group.by = "Celltype") #+ NoLegend()
+tig <- tig4
+rm(tig1, tig2, tig12, tig3, tig4)
+
+#Gene expression
+DimPlot(tig, reduction = "umap", label =TRUE, pt.size = 0.5) #+ NoLegend()
+FeaturePlot(tig,features = c("Camp", "Chil3","Mmp9"),reduction="umap", ncol = 3) #Granulocyte
+FeaturePlot(tig,features = c("Elane", "Vcam1","Mpo"),reduction="umap", ncol = 3) #GMP
+FeaturePlot(tig,features = c("Ccr2", "Klf4","Irf8"),reduction="umap", ncol = 3) #Mono
+FeaturePlot(tig,features = c("Cox6a2", "Dntt","Il7r"),reduction="umap", ncol = 3) #CLP
+FeaturePlot(tig,features = c("Ly6a", "Hlf", "Rgs1"),reduction="umap", ncol = 3) #MMP+HSC
+VlnPlot(tig, features = c("Hlf"), log = TRUE,  slot = "count") #HSC
+FeaturePlot(tig,features = c("Cd79a", "Vpreb1", "Pax5"),reduction="umap", ncol = 3) #other(B-cell)
+FeaturePlot(tig,features = c("Itga2b", "Gata2", "Pf4"),reduction="umap", ncol = 3) #CMP+MkP
+VlnPlot(tig, features = c("Pf4"), log = TRUE,  slot = "count") #MkP
+FeaturePlot(tig,features = c("Klf1", "Mt2", "Gata1"),reduction="umap", ncol = 3) #EryP
+FeaturePlot(tig,features = c("Gypa", "Slc4a1", "Hba-a1"),reduction="umap", ncol = 3) #Erythroid
+FeaturePlot(tig,features = "percent.mt",reduction="umap")
 
 #CITE-seq
 tig <- subset(tig, subset= adt_ADT429<5000)
 tig <- subset(tig, subset= adt_ADT130<5000)
-FeaturePlot(tig,features="adt_ADT130",max.cutoff = 100) #ADT130 = Ly6a(Sca-1)
-FeaturePlot(tig,features="adt_ADT429",max.cutoff = 1000) #ADT429 = CD48
+FeaturePlot(tig,features="adt_ADT130",max.cutoff = 3) #ADT130 = Ly6a(Sca-1)
+VlnPlot(tig, features = c("adt_ADT130"), log = TRUE,  slot = "count") 
+FeaturePlot(tig,features="adt_ADT429",max.cutoff = 3) #ADT429 = CD48
+VlnPlot(tig, features = c("adt_ADT429"), log = TRUE,  slot = "count")
 FeaturePlot(tig,features="adt_ADT012",max.cutoff = 200) #ADT012 = c-kit(CD117)
-FeaturePlot(tig,features="adt_ADT203",max.cutoff = 40) #ADT203 = CD150(SLAM)
+VlnPlot(tig, features = c("adt_ADT012"), log = TRUE,  slot = "count")
+FeaturePlot(tig,features="adt_ADT203",max.cutoff = 2.5) #ADT203 = CD150(SLAM)
+VlnPlot(tig, features = c("adt_ADT203"), log = TRUE,  slot = "count")
 
 #ELASTomics
 FeaturePlot(tig,features="FLD150",max.cutoff = 10) 
@@ -107,7 +148,7 @@ tig1 <- subset(tig1, subset= dtd_FLD500<5)
 tig1 <- subset(tig1, idents = c("Other"), invert= TRUE)
 RidgePlot(object = tig1, features='dtd_FLD500')
 FeatureScatter(object = tig1, feature1 = 'adt_ADT130', feature2 = 'dtd_FLD500')
-tig1 <- subset(tig1, idents = c("preCFU-E"))
+tig1 <- subset(tig1, idents = c("CMP", "EryP", "Erythroid"))
 
 
 exp.matrix <- t(data.frame(tig1[["RNA"]]@data))
@@ -125,7 +166,7 @@ cors <- na.omit(cors)
 #cors$bool <- FALSE
 #cors[cors$gene %in% "IGFBP2",]$bool<-TRUE
 ggplot(cors,aes(x=rank,y=cors,label=gene))+geom_point()
-FeatureScatter(object = tig1, feature1 = 'Zfp329', feature2 = 'dtd_FLD500')
+FeatureScatter(object = tig1, feature1 = 'Spta1', feature2 = 'dtd_FLD500')
 cors.sig<-subset(subset(cors,subset=pval<0.001),subset=abs(cors)>0.05)
 
 #egoGo
