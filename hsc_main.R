@@ -83,7 +83,7 @@ all.genes <- rownames(tig)
 tig <- ScaleData(tig, features = all.genes)
 tig <- RunPCA(tig, npcs=20, features = VariableFeatures(object = tig))
 tig <- RunUMAP(tig, dims = 1:19)
-DimPlot(tig, reduction = "umap", label =TRUE, pt.size = 0.5, group.by = "Celltype") 
+DimPlot(tig, reduction = "umap", label =TRUE, pt.size = 0.5, group.by = "Celltype") + NoLegend()
 rm(tig1, tig2, tig12, tig3)
 
 #Gene expression
@@ -130,8 +130,9 @@ tig1 <- subset(tig1, subset= dtd_FLD500>1)
 tig1 <- subset(tig1, subset= dtd_FLD500<5)
 RidgePlot(object = tig1, features='dtd_FLD500')
 tig1 <- subset(tig1, idents = c("HSC", "MPP", "CMP", "EryP", "Erythroid"))
+tig1 <- subset(tig1, idents = c("HSC", "MPP", "GMP", "Gra"))
 FeatureScatter(object = tig1, feature1 = 'adt_ADT130', feature2 = 'dtd_FLD500',  slot = "count")
-
+FeatureScatter(object = tig1, feature1 = 'Sptb', feature2 = 'dtd_FLD500')
 #Correlation
 library(glmnet)
 exp.matrix <- t(data.frame(tig1[["RNA"]]@data))
@@ -146,7 +147,7 @@ cors$rank <-rank(cors$cors)
 cors$pval <- as.numeric(cors_p_val$p.value)
 cors <- na.omit(cors)
 cors.sig<-subset(subset(cors,subset=pval<0.001),subset=abs(cors)>0.25)
-ggplot(cors,aes(x=rank,y=cors,label=gene))+geom_point()+
+ggplot(cors,aes(x=rank,y=cors,label=gene))+geom_point()+ylim(-0.3, 0.3) +theme_bw()
   geom_point(data=subset(cors, abs(cors) > 0.25),aes(x=rank,y=cors, color = "red"))
 
 #egoGo
