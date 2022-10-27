@@ -23,10 +23,7 @@ tig <- NormalizeData(tig, normalization.method = "LogNormalize", scale.factor = 
 tig[["percent.mt"]] <- PercentageFeatureSet(tig, pattern = "^mt-")
 tig <- subset(tig, subset= percent.mt<5)
 tig <- subset(tig,subset=nCount_RNA >1000)
-#
-#
-# merge all the tig data
-#
+
 tig <- FindVariableFeatures(tig, selection.method = "vst", nfeatures = 300)
 # Identify the 10 most highly variable genes
 top10 <- head(VariableFeatures(tig), 40)
@@ -34,9 +31,6 @@ top10 <- head(VariableFeatures(tig), 40)
 plot1 <- VariableFeaturePlot(tig)
 plot1 <- LabelPoints(plot = tig, points = top10)
 plot1
-
-#reject Abnormal replication
-
 
 # normalize the dtd data with "RC" option.
 #tig <- NormalizeData(tig,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
@@ -55,7 +49,7 @@ ElbowPlot(tig)
 tig <- FindNeighbors(tig, dims = 1:18)
 tig <- FindClusters(tig, resolution = 0.8)
 DimPlot(tig, label = FALSE)
-new.cluster.ids <- c("Gra", "Gra", "Gra","Gra", "GMP", "Mono","Gra", "EryP", "MMP","Erythroid", "CMP", "Bcell","Bcell", "Erythroid", "CLP","Gra", "CMP", "Other","Other")
+new.cluster.ids <- c("Gra", "Gra", "Gra","Gra", "GMP", "Mono","Gra", "EryP", "MPP","Erythroid", "CMP", "Bcell","Bcell", "Erythroid", "CLP","Gra", "CMP", "Other","Other")
 names(new.cluster.ids) <- levels(tig)
 tig <- RenameIdents(tig, new.cluster.ids)
 tig[["Celltype"]] <- Idents(tig)
@@ -70,38 +64,34 @@ names(new.cluster.ids) <- levels(tig1)
 tig1 <- RenameIdents(tig1, new.cluster.ids)
 tig1[["Celltype"]] <- Idents(tig1)
 
-#HSC or MMP
-tig2 <- subset(tig, idents = c("MMP"))
+#HSC or MPP
+tig2 <- subset(tig, idents = c("MPP"))
 tig2 <- FindNeighbors(tig2, dims = 1:20)
 tig2 <- FindClusters(tig2, resolution = 0.8)
 DimPlot(tig2, label = FALSE)
-new.cluster.ids <- c("HSC", "MMP", "MMP", "MMP", "MMP")
+new.cluster.ids <- c("HSC", "MPP", "MPP", "MPP", "MPP")
 names(new.cluster.ids) <- levels(tig2)
 tig2 <- RenameIdents(tig2, new.cluster.ids)
 tig2[["Celltype"]] <- Idents(tig2)
 
 #Reconstruction
-tig3 <- subset(tig, idents = c("CMP", "MMP"), invert = TRUE)
+tig3 <- subset(tig, idents = c("CMP", "MPP"), invert = TRUE)
 tig12 <- merge(tig1, y=tig2)
-tig4 <- merge(tig3, y=tig12)
-tig4 <- FindVariableFeatures(tig4, selection.method = "vst", nfeatures = 300)
-all.genes <- rownames(tig4)
-tig4 <- ScaleData(tig4, features = all.genes)
-tig4 <- RunPCA(tig4, npcs=20, features = VariableFeatures(object = tig4))
-#tig4 <- FindNeighbors(tig4, dims = 1:19)
-#tig4 <- FindClusters(tig4, resolution = 0.1)
-tig4 <- RunUMAP(tig4, dims = 1:19)
-DimPlot(tig, reduction = "umap", label =TRUE, pt.size = 0.5, group.by = "Celltype") #+ NoLegend()
-tig <- tig4
-rm(tig1, tig2, tig12, tig3, tig4)
+tig <- merge(tig3, y=tig12)
+tig <- FindVariableFeatures(tig, selection.method = "vst", nfeatures = 300)
+all.genes <- rownames(tig)
+tig <- ScaleData(tig, features = all.genes)
+tig <- RunPCA(tig, npcs=20, features = VariableFeatures(object = tig))
+tig <- RunUMAP(tig, dims = 1:19)
+DimPlot(tig, reduction = "umap", label =TRUE, pt.size = 0.5, group.by = "Celltype") 
+rm(tig1, tig2, tig12, tig3)
 
 #Gene expression
-DimPlot(tig, reduction = "umap", label =TRUE, pt.size = 0.5) #+ NoLegend()
 FeaturePlot(tig,features = c("Camp", "Chil3","Mmp9"),reduction="umap", ncol = 3) #Granulocyte
 FeaturePlot(tig,features = c("Elane", "Vcam1","Mpo"),reduction="umap", ncol = 3) #GMP
 FeaturePlot(tig,features = c("Ccr2", "Klf4","Irf8"),reduction="umap", ncol = 3) #Mono
 FeaturePlot(tig,features = c("Cox6a2", "Dntt","Il7r"),reduction="umap", ncol = 3) #CLP
-FeaturePlot(tig,features = c("Ly6a", "Hlf", "Rgs1"),reduction="umap", ncol = 3) #MMP+HSC
+FeaturePlot(tig,features = c("Ly6a", "Hlf", "Rgs1"),reduction="umap", ncol = 3) #MPP+HSC
 VlnPlot(tig, features = c("Hlf"), log = TRUE,  slot = "count") #HSC
 FeaturePlot(tig,features = c("Cd79a", "Vpreb1", "Pax5"),reduction="umap", ncol = 3) #other(B-cell)
 FeaturePlot(tig,features = c("Itga2b", "Gata2", "Pf4"),reduction="umap", ncol = 3) #CMP+MkP
@@ -109,10 +99,12 @@ VlnPlot(tig, features = c("Pf4"), log = TRUE,  slot = "count") #MkP
 FeaturePlot(tig,features = c("Klf1", "Mt2", "Gata1"),reduction="umap", ncol = 3) #EryP
 FeaturePlot(tig,features = c("Gypa", "Slc4a1", "Hba-a1"),reduction="umap", ncol = 3) #Erythroid
 FeaturePlot(tig,features = "percent.mt",reduction="umap")
+Fgene <- c("Cd79a", "Vpreb1", "Pax5", "Cox6a2", "Dntt","Il7r", "Itga2b", "Gata2", "Pf4", "Klf1", "Mt2", "Gata1", "Gypa", "Slc4a1", "Hba-a1", "Elane", "Vcam1","Mpo", "Camp", "Chil3","Mmp9", "Ly6a", "Hlf", "Rgs1", "Ccr2", "Klf4","Irf8")
+DoHeatmap(tig, group.by = "Celltype", features = Fgene)
 
 #CITE-seq
-tig <- subset(tig, subset= adt_ADT429<5000)
-tig <- subset(tig, subset= adt_ADT130<5000)
+tig <- subset(tig, subset= adt_ADT130<6)
+tig <- subset(tig, subset= adt_ADT429<6)
 FeaturePlot(tig,features="adt_ADT130",max.cutoff = 3) #ADT130 = Ly6a(Sca-1)
 VlnPlot(tig, features = c("adt_ADT130"), log = TRUE,  slot = "count") 
 FeaturePlot(tig,features="adt_ADT429",max.cutoff = 3) #ADT429 = CD48
@@ -123,38 +115,28 @@ FeaturePlot(tig,features="adt_ADT203",max.cutoff = 2.5) #ADT203 = CD150(SLAM)
 VlnPlot(tig, features = c("adt_ADT203"), log = TRUE,  slot = "count")
 
 #ELASTomics
-FeaturePlot(tig,features="FLD150",max.cutoff = 10) 
+FeaturePlot(tig,features="FLD004",max.cutoff = 15) 
 VlnPlot(tig, features = c("dtd_FLD500"), log = TRUE,  slot = "counts")
-FeatureScatter(object = tig, feature1 = 'adt_ADT130', feature2 = 'dtd_FLD500')
 p <- pivot_longer(as.data.frame(t(tig[["DTD"]]@data)), cols = 1:6, names_to = "Categories", values_to = "Values")
 g <- ggplot(p, aes(x = Categories, y = Values))
 g+geom_violin()+scale_y_log10()+geom_jitter(width=0.3)
+RidgePlot(object = tig, features='dtd_FLD500')
 
-
-FeaturePlot(tig,features="Ly6a",max.cutoff = 2)
-FeaturePlot(tig,features="dtd_FLD500",max.cutoff = 4)
-VlnPlot(tig, features = c("dtd_FLD500"), log = TRUE,  slot = "data")
-VlnPlot(tig, features = c("adt_ADT130"), log = TRUE,  slot = "count")
-
-
-
+#ADT-DTD
+tig1 <- NormalizeData(tig,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
+tig1 <- NormalizeData(tig1,assay="ADT",normalization.method = "CLR",scale.factor = 1e2)
+tig1 <- subset(tig1, idents = c("Other"), invert= TRUE)
+tig1 <- subset(tig1, subset= dtd_FLD500>1)
+tig1 <- subset(tig1, subset= dtd_FLD500<5)
+RidgePlot(object = tig1, features='dtd_FLD500')
+tig1 <- subset(tig1, idents = c("HSC", "MPP", "CMP", "EryP", "Erythroid"))
+FeatureScatter(object = tig1, feature1 = 'adt_ADT130', feature2 = 'dtd_FLD500',  slot = "count")
 
 #Correlation
 library(glmnet)
-tig1 <- NormalizeData(tig,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
-tig1 <- NormalizeData(tig1,assay="ADT",normalization.method = "CLR",scale.factor = 1e2)
-tig1 <- subset(tig1, subset= dtd_FLD500>1)
-tig1 <- subset(tig1, subset= dtd_FLD500<5)
-tig1 <- subset(tig1, idents = c("Other"), invert= TRUE)
-RidgePlot(object = tig1, features='dtd_FLD500')
-FeatureScatter(object = tig1, feature1 = 'adt_ADT130', feature2 = 'dtd_FLD500')
-tig1 <- subset(tig1, idents = c("CMP", "EryP", "Erythroid"))
-
-
 exp.matrix <- t(data.frame(tig1[["RNA"]]@data))
 var.gene <- data.frame(VariableFeatures(tig1))
 response <- data.frame(t(data.frame(tig1[["DTD"]]@data)))
-
 rownames(response) <- rownames(exp.matrix)
 cors <-apply(exp.matrix,2,function(x){cor(response$FLD500,x)})
 cors<-data.frame(cors)
@@ -163,11 +145,9 @@ cors$gene <-rownames(cors)
 cors$rank <-rank(cors$cors)
 cors$pval <- as.numeric(cors_p_val$p.value)
 cors <- na.omit(cors)
-#cors$bool <- FALSE
-#cors[cors$gene %in% "IGFBP2",]$bool<-TRUE
-ggplot(cors,aes(x=rank,y=cors,label=gene))+geom_point()
-FeatureScatter(object = tig1, feature1 = 'Spta1', feature2 = 'dtd_FLD500')
-cors.sig<-subset(subset(cors,subset=pval<0.001),subset=abs(cors)>0.05)
+cors.sig<-subset(subset(cors,subset=pval<0.001),subset=abs(cors)>0.25)
+ggplot(cors,aes(x=rank,y=cors,label=gene))+geom_point()+
+  geom_point(data=subset(cors, abs(cors) > 0.25),aes(x=rank,y=cors, color = "red"))
 
 #egoGo
 library(clusterProfiler)
@@ -178,18 +158,26 @@ symbol2entrez<-function(gene.symbol){
   gene.list<-gene.list[!is.na(gene.list$gene_id),]
   return(gene.list)
 }
-#gene <- symbol2entrez(append(rownames(cors[cors$cors > 0.2,]),rownames(cors[cors$cors < -0.2,])))
-gene <- symbol2entrez(rownames(cors.sig))
+gene <- symbol2entrez(append(rownames(cors[cors$cors > 0.25,]),rownames(cors[cors$cors < -0.25,])))
+#gene <- symbol2entrez(rownames(cors.sig))
 ego_result <- enrichGO(gene          = gene$gene_id, 
                        OrgDb         = org.Mm.eg.db,
                        ont           = "BP",
                        pAdjustMethod = "BH",
-                       pvalueCutoff  = 0.1,
-                       qvalueCutoff  = 0.1, 
+                       pvalueCutoff  = 0.05,
+                       qvalueCutoff  = 0.05, 
                        readable      = TRUE)
 head(as.data.frame(ego_result))
 barplot(ego_result, drop=TRUE)
 View(data.frame(ego_result))
+ego_gene <- c("Ank1", "Cpox", "Spta1", "Sptb", "Uros", "Blvrb", "Actg1", "Arhgdib", "Arpc1b", "Tmsb10", "S100a10", "Gmfg", "Arpc2")
+cors$bool <- FALSE
+cors[cors$gene %in% ego_gene,]$bool<-TRUE
+ggplot(data=subset(cors, abs(cors) <= 0.25),aes(x=rank,y=cors,label=gene))+geom_point()+
+  geom_point(data=subset(cors, abs(cors) > 0.25),aes(x=rank,y=cors, color = "red"))+
+  geom_text_repel(data=subset(cors,bool==TRUE), aes(rank,cors,label=gene), min.segment.length = 0.1) +theme_bw() +NoLegend()
+
+
 
 # heatmap of correlated genes
 cors.sig<-subset(subset(cors,subset=pval<0.001),subset=abs(cors)>0.05)
@@ -200,7 +188,6 @@ out<-pheatmap(exp.matrix[rownames(cors.sig),order(dtd$dtd_FLD500,decreasing = FA
               cluster_cols = FALSE, show_colnames = FALSE,
               annotation_col = dtd,
               clustering_distance_rows = "correlation")
-
 
 # elastic net
 exp.matrix <- t(data.frame(tig1[["RNA"]]@data))
@@ -214,13 +201,13 @@ for (i in 1:length(alpha)) {
 best.alpha <- mse.df$alpha[mse.df$mse == min(mse.df$mse)]
 m <- cv.glmnet(x = exp.matrix, y = response$FLD500, family = "gaussian", alpha = best.alpha)
 best.lambda <- m$lambda.min
-en.model <- glmnet(x = exp.matrix, y = response$FLD004, family = "gaussian",
+en.model <- glmnet(x = exp.matrix, y = response$FLD500, family = "gaussian",
                    lambda = best.lambda, alpha = best.alpha)
 en.model.beta <-data.frame(coef(en.model, s="lambda.min"))
 en.model.beta$gene <- rownames(en.model.beta)
 en.model.beta$cors <- cors.sig[en.model.beta$gene,]$cors
 en.model.beta <- na.omit(en.model.beta)
-ggplot(en.model.beta, aes(x = cors, y = s1, label = gene))+geom_point()+theme_bw()+ylim(c(-0.25,0.25)) + #geom_text_repel()
+ggplot(en.model.beta, aes(x = cors, y = s1, label = gene))+geom_point()+theme_bw() + #geom_text_repel()
   geom_text_repel(aes(label=ifelse(abs(s1) > 0.1,as.character(gene),'')))
 
 
@@ -282,19 +269,5 @@ source(file.path(rdir,"elast.integrated.cor.visualize.R"))
 source(file.path(rdir,"elast.integrated.cor.diffusionmap.R"))
 
  source("elast.integrate.data.R")
-# tig.nep <- elast.integrate.data(tig.nep,Res)
-# DimPlot(tig.nep,reduction = "pca")+FeaturePlot(tig.nep,features = "radii",
-#                                                min.cutoff = 10,
-#                                                max.cutoff = 60,reduction = "pca")
-# VlnPlot(tig.nep,features = "radii")+scale_y_log10()+ylim(c(1,50))
-# 
-# VlnPlot(tig.nep,features = "pval")+ylim(c(0,0.2))#+scale_y_log10()
-# RidgePlot(tig.nep,features="pval")
-# FeaturePlot(tig.nep,features = "log.radii")
-
-source("bulk.tig.mono.vs.co.R")
-DimPlot(tig.bulk.seurat, reduction="pca", group.by = "celltype") + 
-  FeaturePlot(tig.bulk.seurat,features = c("HSD17B2","ITGA8","COLEC10","DLGAP5","CENPW","RAD51AP1"))+
-  FeaturePlot(tig.nep,features = c("HSD17B2","ITGA8","COLEC10","DLGAP5","CENPW","RAD51AP1"))
 
 
