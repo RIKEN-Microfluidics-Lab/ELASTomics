@@ -48,34 +48,34 @@ ElbowPlot(tig)
 #Celltype
 tig <- FindNeighbors(tig, dims = 1:18)
 tig <- FindClusters(tig, resolution = 0.8)
-DimPlot(tig, label = FALSE)
-new.cluster.ids <- c("Gra", "Gra", "Gra","Gra", "GMP", "Mono","Gra", "EryP", "MPP","Erythroid", "CMP", "Bcell","Bcell", "Erythroid", "CLP","Gra", "CMP", "Other","Other")
+DimPlot(tig, label = TRUE)
+new.cluster.ids <- c("Gra", "Gra", "Gra","Gra", "GMP", "Mono","Gra", "3EryP/MEP", "1MPP","4Erythroid", "2CMP", "Bcell","Bcell", "4Erythroid", "CLP","Gra", "2CMP", "Other","Other")
 names(new.cluster.ids) <- levels(tig)
 tig <- RenameIdents(tig, new.cluster.ids)
 tig[["Celltype"]] <- Idents(tig)
 
 #CMP or MkP
-tig1 <- subset(tig, idents = c("CMP"))
+tig1 <- subset(tig, idents = c("2CMP"))
 tig1 <- FindNeighbors(tig1, dims = 1:10)
 tig1 <- FindClusters(tig1, resolution = 0.2)
 DimPlot(tig1, label = FALSE)
-new.cluster.ids <- c("MkP", "CMP", "CMP","CMP")
+new.cluster.ids <- c("MkP", "2CMP", "2CMP","BaP")
 names(new.cluster.ids) <- levels(tig1)
 tig1 <- RenameIdents(tig1, new.cluster.ids)
 tig1[["Celltype"]] <- Idents(tig1)
 
 #HSC or MPP
-tig2 <- subset(tig, idents = c("MPP"))
+tig2 <- subset(tig, idents = c("1MPP"))
 tig2 <- FindNeighbors(tig2, dims = 1:20)
 tig2 <- FindClusters(tig2, resolution = 0.8)
 DimPlot(tig2, label = FALSE)
-new.cluster.ids <- c("HSC", "MPP", "MPP", "MPP", "MPP")
+new.cluster.ids <- c("0HSC", "1MPP", "1MPP", "1MPP", "1MPP")
 names(new.cluster.ids) <- levels(tig2)
 tig2 <- RenameIdents(tig2, new.cluster.ids)
 tig2[["Celltype"]] <- Idents(tig2)
 
 #Reconstruction
-tig3 <- subset(tig, idents = c("CMP", "MPP"), invert = TRUE)
+tig3 <- subset(tig, idents = c("2CMP", "1MPP"), invert = TRUE)
 tig12 <- merge(tig1, y=tig2)
 tig <- merge(tig3, y=tig12)
 tig <- FindVariableFeatures(tig, selection.method = "vst", nfeatures = 300)
@@ -94,13 +94,15 @@ FeaturePlot(tig,features = c("Cox6a2", "Dntt","Il7r"),reduction="umap", ncol = 3
 FeaturePlot(tig,features = c("Ly6a", "Hlf", "Rgs1"),reduction="umap", ncol = 3) #MPP+HSC
 VlnPlot(tig, features = c("Hlf"), log = TRUE,  slot = "count") #HSC
 FeaturePlot(tig,features = c("Cd79a", "Vpreb1", "Pax5"),reduction="umap", ncol = 3) #other(B-cell)
+FeaturePlot(tig,features = c("Prss34"),reduction="umap") #BaP
 FeaturePlot(tig,features = c("Itga2b", "Gata2", "Pf4"),reduction="umap", ncol = 3) #CMP+MkP
 VlnPlot(tig, features = c("Pf4"), log = TRUE,  slot = "count") #MkP
-FeaturePlot(tig,features = c("Klf1", "Mt2", "Gata1"),reduction="umap", ncol = 3) #EryP
+FeaturePlot(tig,features = c("Klf1", "Mt2", "Gata1"),reduction="umap", ncol = 3) #EryP/CMP
 FeaturePlot(tig,features = c("Gypa", "Slc4a1", "Hba-a1"),reduction="umap", ncol = 3) #Erythroid
 FeaturePlot(tig,features = "percent.mt",reduction="umap")
 Fgene <- c("Cd79a", "Vpreb1", "Pax5", "Cox6a2", "Dntt","Il7r", "Itga2b", "Gata2", "Pf4", "Klf1", "Mt2", "Gata1", "Gypa", "Slc4a1", "Hba-a1", "Elane", "Vcam1","Mpo", "Camp", "Chil3","Mmp9", "Ly6a", "Hlf", "Rgs1", "Ccr2", "Klf4","Irf8")
 DoHeatmap(tig, group.by = "Celltype", features = Fgene)
+
 
 #CITE-seq
 tig <- subset(tig, subset= adt_ADT130<6)
@@ -120,7 +122,7 @@ VlnPlot(tig, features = c("dtd_FLD500"), log = TRUE,  slot = "counts")
 p <- pivot_longer(as.data.frame(t(tig[["DTD"]]@data)), cols = 1:6, names_to = "Categories", values_to = "Values")
 g <- ggplot(p, aes(x = Categories, y = Values))
 g+geom_violin()+scale_y_log10()+geom_jitter(width=0.3)
-RidgePlot(object = tig, features='dtd_FLD500')
+
 
 #ADT-DTD
 tig1 <- NormalizeData(tig,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
@@ -128,27 +130,31 @@ tig1 <- NormalizeData(tig1,assay="ADT",normalization.method = "CLR",scale.factor
 tig1 <- subset(tig1, idents = c("Other"), invert= TRUE)
 tig1 <- subset(tig1, subset= dtd_FLD500>1)
 tig1 <- subset(tig1, subset= dtd_FLD500<5)
-RidgePlot(object = tig1, features='dtd_FLD500')
-tig1 <- subset(tig1, idents = c("HSC", "MPP", "CMP", "EryP", "Erythroid"))
-tig1 <- subset(tig1, idents = c("HSC", "MPP", "GMP", "Gra"))
+VlnPlot(object = tig1, features='dtd_FLD004')
+tig1 <- subset(tig1, idents = c("0HSC", "1MPP", "2CMP", "3EryP/MEP", "4Erythroid"))
+#tig1 <- subset(tig1, idents = c("0HSC", "1MPP", "GMP", "Gra"))
 FeatureScatter(object = tig1, feature1 = 'adt_ADT130', feature2 = 'dtd_FLD500',  slot = "count")
-FeatureScatter(object = tig1, feature1 = 'Sptb', feature2 = 'dtd_FLD500')
+FeatureScatter(object = tig1, feature1 = 'Sptb', feature2 = 'dtd_FLD004')
+VlnPlot(tig1, features = "dtd_FLD004", log = TRUE, pt.size = 1)
+FeaturePlot(tig1,features="dtd_FLD500",max.cutoff = 5) 
+
+
 #Correlation
 library(glmnet)
 exp.matrix <- t(data.frame(tig1[["RNA"]]@data))
 var.gene <- data.frame(VariableFeatures(tig1))
 response <- data.frame(t(data.frame(tig1[["DTD"]]@data)))
 rownames(response) <- rownames(exp.matrix)
-cors <-apply(exp.matrix,2,function(x){cor(response$FLD500,x)})
+cors <-apply(exp.matrix,2,function(x){cor(response$FLD004,x)})
 cors<-data.frame(cors)
 cors_p_val <- data.frame(t(apply(exp.matrix,2,function(x){unlist(cor.test(response$FLD004, x, method="pearson"))})))
 cors$gene <-rownames(cors)
 cors$rank <-rank(cors$cors)
 cors$pval <- as.numeric(cors_p_val$p.value)
 cors <- na.omit(cors)
-cors.sig<-subset(subset(cors,subset=pval<0.001),subset=abs(cors)>0.25)
-ggplot(cors,aes(x=rank,y=cors,label=gene))+geom_point()+ylim(-0.3, 0.3) +theme_bw()
-  geom_point(data=subset(cors, abs(cors) > 0.25),aes(x=rank,y=cors, color = "red"))
+cors.sig<-subset(subset(cors,subset=pval<1e-4),subset=abs(cors)>0.25)
+ggplot(cors,aes(x=rank,y=cors,label=gene))+geom_point()+ylim(-0.3, 0.3) +theme_bw()+
+  geom_point(data=subset(cors, abs(cors) > 0.2),aes(x=rank,y=cors, color = "red"))
 
 #egoGo
 library(clusterProfiler)
@@ -159,8 +165,7 @@ symbol2entrez<-function(gene.symbol){
   gene.list<-gene.list[!is.na(gene.list$gene_id),]
   return(gene.list)
 }
-gene <- symbol2entrez(append(rownames(cors[cors$cors > 0.25,]),rownames(cors[cors$cors < -0.25,])))
-#gene <- symbol2entrez(rownames(cors.sig))
+gene <- symbol2entrez(rownames(cors.sig))
 ego_result <- enrichGO(gene          = gene$gene_id, 
                        OrgDb         = org.Mm.eg.db,
                        ont           = "BP",
@@ -171,12 +176,17 @@ ego_result <- enrichGO(gene          = gene$gene_id,
 head(as.data.frame(ego_result))
 barplot(ego_result, drop=TRUE)
 View(data.frame(ego_result))
+#ego2 <- simplify(ego_result)
+#cnetplot(ego2, showCategory = 20, foldChange = NULL, layout = "kk")
+
+
 ego_gene <- c("Ank1", "Cpox", "Spta1", "Sptb", "Uros", "Blvrb", "Actg1", "Arhgdib", "Arpc1b", "Tmsb10", "S100a10", "Gmfg", "Arpc2")
 cors$bool <- FALSE
 cors[cors$gene %in% ego_gene,]$bool<-TRUE
 ggplot(data=subset(cors, abs(cors) <= 0.25),aes(x=rank,y=cors,label=gene))+geom_point()+
   geom_point(data=subset(cors, abs(cors) > 0.25),aes(x=rank,y=cors, color = "red"))+
   geom_text_repel(data=subset(cors,bool==TRUE), aes(rank,cors,label=gene), min.segment.length = 0.1) +theme_bw() +NoLegend()
+
 
 
 
