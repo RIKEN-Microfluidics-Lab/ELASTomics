@@ -114,6 +114,6 @@ DimPlot(subset(cancer_merge12345,subset=percent.mt<5),reduction = "umap",group.b
               reduction = "umap",
               max.cutoff = 4)
 
-rm(cancer,cancer_mcf10,cancer_mcf7,cancer_mda,cancer_merge,cancer_merge1234,cancer_pc3,cancer_pc3_CTL,cancer_pc3_NEP)
+rm(cancer,cancer_mcf10,cancer_mcf7,cancer_mda,cancer_merge,cancer_pc3,cancer_pc3_CTL,cancer_pc3_NEP)
 rm(cancer1,cancer2,cancer2_mcf7,cancer2_pc3,cancer3_merge,cancer3,cancer5,cancer5_merge)
 rm(p1,p2,p3,p4,p5,p6)
