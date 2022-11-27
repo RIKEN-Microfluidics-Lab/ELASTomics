@@ -61,8 +61,8 @@ p1<-ggplot(prob_stack,aes(x=radius*1e9,y=free_energy,color=as.factor(sigma)))+ge
 #
 # amount of imported molecules with the radius of S.radius
 #
-S.list<-seq(3,18,length.out = 20)*1e-9
-V.list<-seq(50,50,length.out = 20)*1e-3
+S.list<-seq(3,15,length.out = 13)*1e-9
+V.list<-seq(50,50,length.out = 13)*1e-3
 I2<-matrix(nrow=length(V.list),ncol=1)
 # compute flux
 for (jcnt in 1:length(sigma.list)){
@@ -100,15 +100,16 @@ for (jcnt in 1:length(sigma.list)){
 #colnames(I2)<-c("amount","surface_tension","type")
 colnames(I2_stack)<-c("amount","surface_tension","voltage","radius","type")
 
-ggplot(I2_stack,aes(x=radius*1e9,y=amount,color=as.factor(surface_tension)))+
+p3<-ggplot(I2_stack,aes(x=radius*1e9,y=amount,color=as.factor(surface_tension)))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"))+
   geom_line()+scale_y_log10()#+
 #  coord_cartesian(xlim = NULL, ylim =c(1e-100,1e-68))
-p1+p2+p3
-
-
-
+p4<-ggplot(I2_stack,aes(x=surface_tension,y=amount,color=as.factor(radius)))+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"))+
+  geom_line()+scale_y_log10()
+p1+p2+p3+p4
 
 
 exp.data <-read.table("/home/samba/public/shintaku/ELASTomics/SD2_500nm_ResultData.csv",sep = ",",header = TRUE)

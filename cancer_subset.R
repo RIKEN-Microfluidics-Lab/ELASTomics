@@ -45,6 +45,7 @@ fldmean<-c(AverageExpression(subset(mcf10a,subset=NEP=="0V"),features="FLD004",s
   AverageExpression(subset(mcf10a,subset=NEP=="0V"),features="FLD500",slot="counts")$DTD)
 
 fldcount <- data.frame(mcf10a[["DTD"]]@counts)
+mcf10a_dtd<-data.frame(fldcount[1:6,])
 fldcount <- t(sweep(fldcount[1:6,],MARGIN=2,fldmean,FUN = "-"))
 library(reshape2)
 ggplot(melt(fldcount),aes(x=Var2,y=value-min(fldcount)))+geom_violin()+geom_jitter(size=0.1)+scale_y_log10()+
@@ -61,6 +62,8 @@ RidgePlot(mcf10a,features = c("dtdbk_FLD004","dtdbk_FLD010",
           group.by = "NEP")+scale_x_log10()
 par<-data.frame(t(c(1.138212e-13,5.359301e-06)))
 colnames(par)<-c("gamma","sigma")
+
+
 output <- elast.comp.radius(mcf10a_dtd$cancer4TTCGCTGCAATGCAGG,S.radii,par,scale,plot.flag=TRUE)
 
 
