@@ -1,4 +1,6 @@
-datadir <- "/home/samba/sanger/shintaku/ELASTomics/20220922HiSeqX015_index"
+library(stringdist)
+rdir <- "/home/samba/public/shiomi/ELASTomics/"
+datadir <- "/home/samba/sanger/shintaku/ELASTomics/20220922HiSeqX015_index/"
 index <- Read10X(data.dir = datadir)
 index.dtd <- Read10X(data.dir = file.path(datadir,"CITE-seq"))
 
@@ -36,7 +38,7 @@ cellids <-paste0(unlist(str_sub(colnames(index.seurat),1,8)),plate.num$plate,"-"
 
 index.seurat<-RenameCells(index.seurat,new.names = cellids)
 
-source("/home/samba/public/shintaku/github/ELASTomics/io/hunter_Seurat_load_adt_data.R")
+source(file.path(rdir,"io/hunter_Seurat_load_adt_data.R"))
 #load FACS index data file name is 9 char long.
 indexdir <- "/home/samba/sanger/Shiomi/hunterindex"
 files <- data.frame(list.files(file.path(datadir,"count"),pattern="counts.tsv.gz"))
@@ -47,13 +49,45 @@ channels <- rep(list(c("Events","FSC","SSC","Venus","PI","Hoechst")),length(inde
 
 adt.csv <- cbind(load.adt(indexfiles[1],str_sub(list.files(indexdir,pattern=batch),1,9)[1],channels[[1]]),
                  load.adt(indexfiles[2],str_sub(list.files(indexdir,pattern=batch),1,9)[2],channels[[2]]))
-
-adt.seurat <- CreateAssayObject(adt.csv[,colnames(adt.csv) %in% cellids])
+#adt.seurat <- CreateAssayObject(adt.csv[,colnames(adt.csv) %in% cellids])
+adt.seurat <- as.matrix(adt.csv[,colnames(adt.csv) %in% cellids])
+adt.seurat1 <- matrix(nrow = dim(adt.seurat)[1], ncol = dim(adt.seurat)[2])
+for (icnt in 1:dim(adt.seurat)[1]){
+  adt.seurat1[icnt,] <- as.integer(adt.seurat[icnt,])
+}
+colnames(adt.seurat1) <- colnames(adt.seurat)
+rownames(adt.seurat1) <- rownames(adt.seurat)
+adt.seurat <- CreateAssayObject(adt.seurat1)
 
 index.seurat [["facs"]]<- adt.seurat
 index.seurat <- NormalizeData(index.seurat,normalization.method ="CLR",assay = "DTD")
 index.seurat <- NormalizeData(index.seurat,normalization.method ="CLR",assay = "facs")
 
 # "FLD004-AACGTGAT" "FLD010-AAACATCG" "FLD040-ATGCCTAA" "FLD070-AGTGGTCA" "FLD150-ACCACTGT" "FLD500-ACATTGGC"
-FeatureScatter(index.seurat,feature1="facs_Venus",feature2="FLD150-ACCACTGT")
+FeatureScatter(index.seurat,feature1="facs_Venus",feature2="FLD500-ACATTGGC")
 VlnPlot(index.seurat,features=c("FLD004-AACGTGAT","FLD010-AAACATCG","FLD040-ATGCCTAA","FLD070-AGTGGTCA","FLD150-ACCACTGT","FLD500-ACATTGGC"),slot="counts")
+
+DTDtable <- bind_cols(as.data.frame(t(index.seurat[["DTD"]][c("FLD004-AACGTGAT", "FLD010-AAACATCG", "FLD040-ATGCCTAA", "FLD070-AGTGGTCA", "FLD150-ACCACTGT", "FLD500-ACATTGGC")])), as.data.frame(t(index.seurat[["facs"]]["Venus"])))
+colnames(DTDtable) <- c("FLD004","FLD010","FLD040","FLD070","FLD150","FLD500","Venus")
+DTDtable$Sum <- DTDtable$FLD004+DTDtable$FLD010+DTDtable$FLD040+DTDtable$FLD070+DTDtable$FLD150+DTDtable$FLD500
+DTDtable$Plot <- str_sub(rownames(DTDtable), start = 9, end = 9)
+DTDtable$Plot1 <- if_else(as.integer(str_sub(rownames(DTDtable), start = 11, end = 11)) < 4, true = 1, false = 2)
+DTDtable$Plot <- paste(DTDtable$Plot, DTDtable$Plot1, sep = "") 
+
+g <- ggplot(DTDtable, aes(y = Sum, x = Plot),color = Plot)
+g <- g + geom_point(position = "identity", alpha = 0.8)
+g <- g + geom_boxplot(color = c("#EA5514", "#F39800", "#00A0E9", "#036EB8"), alpha = 1)
+g <- g + geom_jitter(size = 2, width = 0.2)
+plot(g)
+
+g <- ggplot(DTDtable, aes(y = Sum, x = Venus, color = Plot))+geom_point()+ scale_color_manual(values = c("#EA5514", "#F39800", "#00A0E9", "#036EB8"))+theme_bw()
+plot(g)  
+
+DTDtable1 <- DTDtable[DTDtable$Venus > 0.5,]
+DTDtable %>%
+  ggplot(aes(x = Venus, y = Sum)) +
+  geom_point() +
+  geom_density_2d_filled() +xlim(-0.5, 2.5) +ylim(-5, 25) +scale_y_sqrt()
+  theme_minimal(base_size = 20) 
+
+  
