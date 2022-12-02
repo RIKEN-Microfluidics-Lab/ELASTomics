@@ -1,10 +1,10 @@
 cancer <- FindVariableFeatures(cancer, selection.method = "vst", nfeatures = 300)
 cancer <- NormalizeData(cancer,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
 cancer[["percent.mt"]] <- PercentageFeatureSet(cancer, pattern = "^MT-")
-
-
+cancer <- subset(cancer, subset= percent.mt<10)
 #
 # PCA and visualize
+#
 all.genes <- rownames(cancer)
 cancer <- ScaleData(cancer, features = all.genes)
 cancer <- RunPCA(cancer, npcs=50, features = VariableFeatures(object = cancer))
@@ -12,50 +12,43 @@ cancer <- RunPCA(cancer, npcs=50, features = VariableFeatures(object = cancer))
 DimPlot(cancer, reduction = "pca",group.by = "run")+
   DimPlot(cancer,reduction="pca",group.by = "celltype")+
   FeaturePlot(cancer,features = "dtd_FLD004")
-
 cancer <- JackStraw(cancer, num.replicate = 100)
 cancer <- ScoreJackStraw(cancer, dims = 1:20)
 JackStrawPlot(cancer, dims = 1:20)
 ElbowPlot(cancer)
-
 cancer <- FindNeighbors(cancer, dims = 1:10)
 cancer <- FindClusters(cancer, resolution = 0.05)
-
-
+#
 # Retreiving the results of the preprocessing from the Seurat object
+#
 cluster = as.numeric(Idents(cancer))
 cancer <- RunUMAP(cancer, dims = 1:10)
 DimPlot(cancer, reduction = "pca")+
   DimPlot(subset(cancer,subset=run=="third"),reduction="pca")+
   FeaturePlot(cancer,features = c("dtd_FLD500"), reduction = "umap")+
-  FeaturePlot(cancer,features = "percent.mt",reduction = "pca",max.cutoff = 10)
+  DimPlot(subset(cancer,subset=run=="first"),reduction="pca")
 
 #
 # subset third run
+#
 cancer3<-subset(cancer,subset=run=="third")
 DimPlot(subset(cancer3,subset=percent.mt<5),reduction = "pca")+
   FeaturePlot(subset(cancer3,subset=percent.mt<5),
               features = c("CCDC190","CAVIN3","CD163L1"),reduction = "pca",
               max.cutoff = 4)
-
 cancer3 <- FindVariableFeatures(cancer3, selection.method = "vst", nfeatures = 300)
 all.genes <- rownames(cancer3)
 cancer3 <- ScaleData(cancer3, features = all.genes)
 cancer3 <- RunPCA(cancer3, npcs=50, features = VariableFeatures(object = cancer3))
-
+cancer3 <- RunTSNE(cancer3, npcs=50, features = VariableFeatures(object = cancer3))
 cancer3 <- FindNeighbors(cancer3, dims = 1:10)
 cancer3 <- FindClusters(cancer3, resolution = 0.05)
-DimPlot(cancer3, reduction = "pca")+
-  FeaturePlot(cancer3,features = "dtd_FLD004")
-DimPlot(subset(cancer3,subset=percent.mt<5),reduction = "umap")+
-  FeaturePlot(subset(cancer3,subset=percent.mt<5),
-              features = c("CCDC190","CAVIN3","CD163L1","PLAU","FOSL1"),reduction = "umap",
-              max.cutoff = 4)
-
-
-
+DimPlot(cancer3, reduction = "tsne")+
+  FeaturePlot(cancer3,features = "dtd_FLD004", reduction = "tsne")
+DimPlot(cancer3,reduction = "tsne")+
+  FeaturePlot(cancer3, features = c("CYBA","CAVIN3","S100A2","FOSL1", "CDKN1A","DUSP1"),reduction = "tsne", max.cutoff = 4)
 cancer3 <- RenameIdents(cancer3, `0` = "PC3", `1` = "MCF10A", `2` = "MDAMB231")
-#cancer1 <- RenameIdents(cancer1, `0` = "MCF7_NEP", `1` = "PC3_NEP")
+
 cancer_mcf10<-subset(cancer3,idents = "MCF10A")
 cancer_mcf10[["celltype"]]<-"MCF10A"
 cancer_mcf10[["NEP"]]<-"0V"
@@ -82,15 +75,3 @@ all.genes <- rownames(cancer_merge123)
 cancer_merge123 <- ScaleData(cancer_merge123, features = all.genes)
 cancer_merge123 <- RunPCA(cancer_merge123, npcs=20, features = VariableFeatures(object = cancer_merge123))
 DimPlot(cancer_merge123,group.by = "celltype")
-cancer_merge123 <- RunUMAP(cancer_merge123, dims = 1:10)
-cancer_merge123<-RunTSNE(cancer_merge123,dims=1:10)
-DimPlot(cancer_merge123,reduction = "tsne",group.by = "celltype")+
-  DimPlot(cancer_merge123,reduction = "tsne",group.by = "NEP")+
-  FeaturePlot(cancer_merge123,
-              features = c("percent.mt"),
-              reduction = "tsne",
-              max.cutoff = 10)
-FeaturePlot(cancer_merge123,
-              features = c("CYBA","S100A2","CCDC190","CAVIN3","CD163L1","PLAU","FOSL1","percent.mt"),
-              reduction = "tsne",
-              max.cutoff = 10)
