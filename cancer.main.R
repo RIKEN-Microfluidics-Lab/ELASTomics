@@ -27,28 +27,39 @@ source("elast.load.elast.data.R")
 # https://docs.google.com/spreadsheets/d/1GJjzlQfBgJoL_iBLtggQhTF5ABsY_ZZz/edit?rtpof=true#gid=1765377542
 # HiSeqX_012_013
 # https://docs.google.com/spreadsheets/d/1vO2SCCNvDIM0N9YOOMDDsC6Xiqjavxqi/edit#gid=1765377542
-wdir <- "/home/samba/sanger/shintaku/ELASTomics/20220603HiSeqX010_011/cancer1_12/outs/filtered_feature_bc_matrix/"
+
+#First
 # ・PC3 control
-# ・PC3 EP(40V) ELPOligoNo.35(CATACCAA)
+# ・PC3 EP(40V) ELPOligoNo.35
+# ・MCF7 EP (40V) ELPOligoNo.37
+#Second
+# ・PC3 CytoD EP(40V) ELPOligoNo.36
 # ・MCF7 Control
+#Third
+# ・MDAMB231 EP(40V) ELPOligoNo.32
+# ・PC3 EP(75V) ELPOligoNo.33
+# ・MCF10A Control
+#Forth
+# ・MCF10A EP(40V) ELPOligoNo.31
+# ・PC3 MBCD EP(40V) ELPOligoNo.34
+# ・MDAMB231 Control
+#Fifth
+# ・MCF10A EP(40V) ELPOligoNo.31
+# ・MCF7 Control
+#Sixth
+# ・MCF7 EP (40V) ELPOligoNo.37
+# ・MCF10A CytoD EP(40V) ELPOligoNo.36
+
+wdir <- "/home/samba/sanger/shintaku/ELASTomics/20220603HiSeqX010_011/cancer1_12/outs/filtered_feature_bc_matrix/"
 cancer1 <-load.elast.data(wdir,"cancer1",100)
-#
-#
-wdir<- "/home/samba/sanger/shintaku/ELASTomics/20220603HiSeqX010_011/cancer2_12/outs/filtered_feature_bc_matrix/"
-#
-#・PC3 CytoD EP(40V) ELPOligoNo.36(CCAGTTCA)
-#・MCF7 EP (40V) ELPOligoNo.37(CCGAAGTA)
-cancer2 <-load.elast.data(wdir,"cancer2",100)
-#
 cancer1[["run"]]<-"first"
+wdir<- "/home/samba/sanger/shintaku/ELASTomics/20220603HiSeqX010_011/cancer2_12/outs/filtered_feature_bc_matrix/"
+cancer2 <-load.elast.data(wdir,"cancer2",100)
 cancer2[["run"]]<-"second"
-#
-#cancer <- merge(cancer1, y=cancer2)
 cancer <-cancer2
 source("cancer2_Seurat.clustering.R")
 cancer <- merge(cancer1,y=cancer2)
 source("cancer1_Seurat.clustering.R")
-#cancer <- merge(cancer1,y=cancer2)
 
 wdir<- "/home/samba/sanger/shintaku/ELASTomics/20220603HiSeqX012_013/cancer3_12/outs/filtered_feature_bc_matrix/"
 cancer3 <-load.elast.data(wdir,"cancer3",100)
@@ -65,119 +76,87 @@ source("cancer4_Seurat.clustering.R")
 wdir<- "/home/samba/sanger/shintaku/ELASTomics/20221012HiSeqX016/MCF7_10A/outs/filtered_feature_bc_matrix/"
 cancer5 <-load.elast.data(wdir,"cancer5",100)
 cancer5[["run"]]<-"fifth"
-cancer<-merge(cancer5,y=cancer_merge1234)
+cancer<-cancer5
 source("cancer5_Seurat.clustering.R")
 
 wdir<- "/home/samba/sanger/shintaku/ELASTomics/20221012HiSeqX017/MCF7_10A/outs/filtered_feature_bc_matrix/"
 cancer6 <-load.elast.data(wdir,"cancer6",100)
 cancer6[["run"]]<-"sixth"
-cancer<-merge(cancer6,y=cancer_merge12345)
+cancer<-cancer6
 source("cancer6_Seurat.clustering.R")
 
-
-
-VlnPlot(subset(subset(cancer_merge123456,subset=run==c("fifth", "sixth")),subset=celltype=="MCF10A"),features = "dtd_FLD004",group.by = "condition")
-VlnPlot(subset(subset(cancer_merge123456,subset=run==c("fifth", "sixth"), invert=TRUE),subset=celltype=="PC3"),features = "dtd_FLD004",group.by = "NEP") 
-VlnPlot(subset(subset(cancer_merge1234,subset=NEP=="40V"),subset=condition=="normal"), features = "dtd_FLD004",group.by = "celltype")
-
+VlnPlot(subset(subset(cancer_merge123456,subset=run==c("fifth", "sixth")),subset=celltype=="MCF10A"),features = "dtd_FLD004",group.by = "condition", cols = c("#D55E00", "#0072B2"))
+VlnPlot(subset(cancer_merge123456,subset=celltype=="MCF7"),features = "dtd_FLD004",group.by = "NEP", cols = c("#D55E00", "#0072B2"))
+VlnPlot(subset(subset(cancer_merge123456,subset=run==c("fifth", "sixth"), invert=TRUE),subset=celltype=="PC3"),features = "dtd_FLD004",group.by = "NEP", cols = c("#D55E00","#40A39A", "#0072B2")) 
+RidgePlot(subset(subset(cancer_merge1234,subset=NEP=="40V"),subset=condition=="normal"), features = "dtd_FLD004",group.by = "celltype")
 RidgePlot(subset(subset(cancer_merge123456,subset=run==c("first", "second")),subset=celltype=="MCF7"),features = "dtd_FLD004",group.by = "NEP")+
   RidgePlot(subset(subset(cancer_merge123456,subset=run==c("fifth", "sixth")),subset=celltype=="MCF7"),features = "dtd_FLD004",group.by = "NEP")
 DimPlot(subset(subset(cancer_merge123456,subset=run==c("first", "second")),subset=celltype=="MCF7") ,reduction="pca" ,group.by = "NEP")+
   DimPlot(subset(subset(cancer_merge123456,subset=run==c("fifth", "sixth")),subset=celltype=="MCF7") ,reduction="pca" ,group.by = "NEP")
 
-cancer_merge1234<-NormalizeData(cancer_merge1234,assay="RNA",normalization.method = "LogNormalize", scale.factor = 1e5)
-cancer_40V<-subset(subset(cancer_merge1234,subset=NEP=="40V"),subset=condition=="normal")
-cancer_40V_melt <- data.frame(t(cancer_40V[["DTD"]]@data))
-cancer_40V_melt$celltype <- unlist(cancer_40V[["celltype"]])
-ggplot(cancer_40V_melt,aes(x=FLD004,y=..density..,fill=celltype))+
-  geom_density(aes(color = celltype, alpha = 0.2))
+# Dextran ratio
+DTDcoc <- c(10455, 9811, 10015, 4647, 11254, 6004)
+DTDmob <- c(2.26E-08,2.29E-08,2.38E-08,1.72E-08,1.44E-08,1.69E-08)
+DTD40V <- subset(subset(cancer_merge123456,subset=NEP=="40V"),subset=condition=="normal")
+DTD40V_dtd <-data.frame(t(DTD40V[["DTD"]]@counts))
+DTD40V_dtd$FLD004 <- DTD40V_dtd$FLD004 * (10000 / DTDcoc[1]) / (DTDmob[1] / 1E-07)
+DTD40V_dtd$FLD010 <- DTD40V_dtd$FLD010 * (10000 / DTDcoc[2]) / (DTDmob[2] / 1E-07)
+DTD40V_dtd$FLD040 <- DTD40V_dtd$FLD040 * (10000 / DTDcoc[3]) / (DTDmob[3] / 1E-07)
+DTD40V_dtd$FLD070 <- DTD40V_dtd$FLD070 * (10000 / DTDcoc[4]) / (DTDmob[4] / 1E-07)
+DTD40V_dtd$FLD150 <- DTD40V_dtd$FLD150 * (10000 / DTDcoc[5]) / (DTDmob[5] / 1E-07)
+DTD40V_dtd$FLD500 <- DTD40V_dtd$FLD500 * (10000 / DTDcoc[6]) / (DTDmob[6] / 1E-07)
+DTD40V_dtd_melt<-melt(DTD40V_dtd,measure.vars = c("FLD004","FLD010","FLD070","FLD500"),value.name = "Counts")
+ggplot(DTD40V_dtd_melt,aes(x=variable,y=Counts))+geom_violin()+geom_jitter(size=0.1)+ 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        legend.position="none")
+
+source("cancer.integraated.R")
+
+DimPlot(subset(cancer.integrated,subset=NEP=="75V", invert=TRUE) ,reduction="umap" ,group.by = "celltype")
+DimPlot(subset(cancer.integrated,subset=NEP=="75V", invert=TRUE) ,reduction="umap" ,group.by = "NEP", cols = c("#D55E00", "#0072B2"))
+DimPlot(subset(cancer.integrated,subset=NEP=="75V", invert=TRUE) ,reduction="umap" ,group.by = "run")
+FeaturePlot(subset(cancer.integrated,subset=NEP=="75V", invert=TRUE) ,reduction="umap" ,features = "FLD004", max.cutoff = 4)
+FeaturePlot(subset(cancer.integrated,subset=NEP=="75V", invert=TRUE) ,reduction="umap" ,features = "FLD500", max.cutoff = 4)
+VlnPlot(subset(cancer.integrated,subset=NEP=="40V"), features = "FLD004", group.by = "celltype")
+VlnPlot(subset(cancer.integrated,subset=NEP=="40V"), features = "FLD500", group.by = "celltype")
 
 #DNAtag("dtd_M1AE31", "dtd_MM2E32", "dtd_P3HE33", "dtd_P3ME34", "dtd_P3NE35", "dtd_P3CE36", "dtd_MC7E37")
-FeatureScatter(subset(cancer_merge1234, subset = percent.mt < 10 & nCount_RNA>=2000 & run==c("first", "second")),
-               feature1 = "dtd_P3NE35",feature2 = "dtd_MC7E37",
-               group.by = "celltype",slot="counts")+xlim(0,10000)+ylim(0,100000)
-FeatureScatter(subset(cancer_merge1234, subset = percent.mt < 10 & nCount_RNA>=2000 & run=="third"),
-               feature1 = "dtd_MM2E32",feature2 = "dtd_P3HE33",
-               group.by = "celltype",slot="counts")
-FeatureScatter(subset(cancer_merge1234, subset = percent.mt < 10 & nCount_RNA>=2000 & run==c("third", "forth")),
-               feature1 = "dtd_M1AE31",feature2 = "dtd_MM2E32",
-               group.by = "celltype",slot="counts")
-FeatureScatter(subset(cancer_merge1234, subset = percent.mt < 10 & nCount_RNA>=2000 & run=="forth"),
-               feature1 = "dtd_M1AE31",feature2 = "dtd_P3ME34",
-               group.by = "celltype",slot="counts")
-DimPlot(subset(subset(cancer_merge1234,subset=NEP=="40V"),subset=condition=="normal"),
-            reduction = "tsne", group.by = "celltype")
-FeaturePlot(subset(subset(cancer_merge1234,subset=NEP=="40V"),subset=condition=="normal"), features = "dtd_M1AE31",reduction = "tsne", max.cutoff = 6) #MCF10Atag
-FeaturePlot(subset(subset(cancer_merge1234,subset=NEP=="40V"),subset=condition=="normal"), features = "dtd_MM2E32",reduction = "tsne", max.cutoff = 2) #MDAMB231tag
-FeaturePlot(subset(subset(cancer_merge1234,subset=NEP=="40V"),subset=condition=="normal"), features = "dtd_P3NE35",reduction = "tsne", max.cutoff = 4) #PC3tag
-FeaturePlot(subset(subset(cancer_merge1234,subset=NEP=="40V"),subset=condition=="normal"), features = "dtd_MC7E37",reduction = "tsne", max.cutoff = 5) #MCF7tag
-
-FeaturePlot(subset(subset(cancer_merge1234,subset=NEP=="40V"),subset=condition=="normal"),
+FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), features = "dtd_M1AE31",reduction = "tsne", max.cutoff = 6) #MCF10Atag
+FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), features = "dtd_MM2E32",reduction = "tsne", max.cutoff = 2) #MDAMB231tag
+FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), features = "dtd_P3NE35",reduction = "tsne", max.cutoff = 2, min.cutoff = 0.5) #PC3tag
+FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), features = "dtd_MC7E37",reduction = "tsne", max.cutoff = 4, min.cutoff = 1) #MCF7tag
+FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"),
             features = c("dtd_M1AE31", "dtd_MM2E32", "dtd_P3HE33", "dtd_P3ME34", "dtd_P3NE35", "dtd_P3CE36", "dtd_MC7E37"),
             reduction = "tsne", max.cutoff = 4, min.cutoff = 2)
 
+FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), reduction = "tsne", features = "CYBA", max.cutoff = 6) #MCF7
+FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), reduction = "tsne", features = "S100A2", max.cutoff = 6) #PC-3
+FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), reduction = "tsne", features = "CAVIN3", max.cutoff = 4) #MDAMB231
+FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), reduction = "tsne", features = "DUSP1", max.cutoff = 4) #MCF10A
 
-
-cancer_merge <- subset(subset(cancer_merge1234,subset=NEP=="75V",invert=TRUE),subset=condition=="normal")
-cancer_merge <- FindVariableFeatures(cancer_merge, selection.method = "vst", nfeatures = 300)
-all.genes <- rownames(cancer_merge)
-cancer_merge <- ScaleData(cancer_merge, features = all.genes)
-cancer_merge <- RunPCA(cancer_merge, npcs=20, features = VariableFeatures(object = cancer_merge1234))
-DimPlot(cancer_merge,group.by = "celltype")
-cancer_merge <- RunUMAP(cancer_merge, dims = 1:10)
-cancer_merge <- RunTSNE(cancer_merge,dims=1:10)
-
-RidgePlot(subset(cancer_merge,subset=celltype=="MCF10A"),features = "dtd_FLD004",group.by = "NEP")+
-   RidgePlot(subset(cancer_merge,subset=celltype=="MCF7"),features = "dtd_FLD004",group.by = "NEP")+
-   RidgePlot(subset(cancer_merge,subset=celltype=="MDAMB231"),features = "dtd_FLD004",group.by = "NEP")+
-   RidgePlot(subset(subset(cancer_merge,subset=celltype=="PC3"),subset=condition=="normal"),features = "dtd_FLD004",group.by = "NEP")
-
-VlnPlot(subset(subset(cancer_merge,subset=NEP=="40V"),subset=condition=="normal"),
-        features = c("dtd_FLD004","dtd_FLD010","dtd_FLD070","dtd_FLD150","dtd_FLD500"),
-        group.by = "celltype",
-        pt.size = 0.01)
-
-DimPlot(subset(cancer_merge,subset=condition=="normal"),reduction="tsne",group.by = "celltype")+
-  DimPlot(subset(cancer_merge,subset=condition=="normal"),reduction="tsne",group.by = "NEP")+
-  DimPlot(cancer_merge,reduction="tsne",group.by = "condition")
-
-
-DimPlot(subset(cancer_merge,subset=condition=="normal"), reduction="tsne",group.by = "celltype")+
-  DimPlot(subset(cancer_merge,subset=condition=="normal"), reduction="tsne",group.by = "NEP")+
-    FeaturePlot(subset(cancer_merge,subset=condition=="normal"), features = c("dtd_FLD004"), reduction = "tsne",max.cutoff = 4)+
-    FeaturePlot(subset(cancer_merge,subset=condition=="normal"), features = c("dtd_FLD500"), reduction = "tsne",max.cutoff = 4)
-#
-#
-FeaturePlot(subset(cancer_merge,subset=condition=="normal"),
-              features = c("CYBA","S100A2","CAVIN3","CD163L1","PLAU","FOSL1"),
-              reduction = "tsne", max.cutoff = 4)
+#FindMarkers(subset(cancer.integrated,subset=NEP=="40V"), ident.1 = "MCF10A")
 #
 # cell cycle
-gene_list <- data.frame(unique(rownames(cancer_merge)))
+#
+gene_list <- data.frame(unique(rownames(cancer.integrated)))
 source(file.path(rdir,"elast.biomaRt.R"))
 source(file.path(rdir,"util/fucci_cellcycle_genes.R"))
   
 sub_ref <- ref %>%
-  dplyr::filter(gene_short_name %in% rownames(cancer_merge))
+  dplyr::filter(gene_short_name %in% rownames(cancer.integrated))
   
 genes <- fucci_cellcycle_genes(sub_ref)
 cell_cycle_markers<-genes[[1]]
 s_genes <- genes[[2]]
 g2m_genes <- genes[[3]]
-
-cancer_merge<-CellCycleScoring(cancer_merge,g2m.features = g2m_genes,s.features = s_genes,set.ident = TRUE)
-FeaturePlot(cancer_merge,features = c("S.Score","G2M.Score","dtd_FLD004"),reduction="tsne")+
-  DimPlot(cancer_merge,group.by = "celltype",reduction="tsne")
-VlnPlot(cancer_merge,features = "dtd_FLD004")
-  FeatureScatter(cancer_merge,feature2 = "dtd_FLD004",feature1 = "S.Score")+
-  FeatureScatter(cancer_merge,feature2 = "dtd_FLD004",feature1 = "G2M.Score")
-FeaturePlot(subset(cancer_merge,subset=NEP=="40V"),features = c("dtd_P3NE35","dtd_MC7E37","dtd_P3CE36","dtd_M1AE31",
-                                        "dtd_MM2E32","dtd_P3HE33","dtd_P3ME34"),reduction = "tsne",slot="counts")+
-    DimPlot(cancer_merge,group.by = "celltype",reduction="tsne")
+VlnPlot(cancer.integrated,features = "dtd_FLD004")+
+  FeatureScatter(cancer.integrated,feature2 = "dtd_FLD004",feature1 = "S.Score")+
+  FeatureScatter(cancer.integrated,feature2 = "dtd_FLD004",feature1 = "G2M.Score")+
+  FeatureScatter(cancer.integrated,feature1 = "G2M.Score" ,feature2 = "S.Score")
 
 # mcf10a subset 
-mcf10a <- subset(cancer_merge,subset=celltype=="MCF10A" | celltype=="MCF7")
-
+mcf10a <- subset(cancer.integrated,subset=celltype=="MCF10A")
 Idents(mcf10a)<-mcf10a[["NEP"]]
 mcf10a<-NormalizeData(mcf10a,assay="RNA",normalization.method = "LogNormalize", scale.factor = 1e5)
 mcf_nep <- FindMarkers(mcf10a,ident.1 = "40V",ident.2 = "0V")
