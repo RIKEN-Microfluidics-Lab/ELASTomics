@@ -206,13 +206,13 @@ exp.matrix <- exp.matrix[,colnames(exp.matrix) %in% cors.sig[,]$gene]
 alpha <- seq(0, 1, 0.01)
 mse.df <- NULL
 for (i in 1:length(alpha)) {
-  m <- cv.glmnet(x = exp.matrix, y = response$FLD500, family = "gaussian", alpha = alpha[i])
+  m <- cv.glmnet(x = exp.matrix, y = response$FLD004, family = "gaussian", alpha = alpha[i])
   mse.df <- rbind(mse.df, data.frame(alpha = alpha[i],mse = min(m$cvm)))
 }
 best.alpha <- mse.df$alpha[mse.df$mse == min(mse.df$mse)]
-m <- cv.glmnet(x = exp.matrix, y = response$FLD500, family = "gaussian", alpha = best.alpha)
+m <- cv.glmnet(x = exp.matrix, y = response$FLD004, family = "gaussian", alpha = best.alpha)
 best.lambda <- m$lambda.min
-en.model <- glmnet(x = exp.matrix, y = response$FLD500, family = "gaussian",
+en.model <- glmnet(x = exp.matrix, y = response$FLD004, family = "gaussian",
                    lambda = best.lambda, alpha = best.alpha)
 en.model.beta <-data.frame(coef(en.model, s="lambda.min"))
 en.model.beta$gene <- rownames(en.model.beta)
