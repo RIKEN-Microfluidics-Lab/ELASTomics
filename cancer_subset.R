@@ -60,7 +60,7 @@ RidgePlot(mcf10a,features = c("dtdbk_FLD004","dtdbk_FLD010",
                               "dtdbk_FLD040","dtdbk_FLD070",
                               "dtdbk_FLD150","dtdbk_FLD500"),
           group.by = "NEP")+scale_x_log10()
-par<-data.frame(t(c(1.138212e-13,5.359301e-06)))
+par<-data.frame(t(c(2e-11,5.359301e-06)))
 colnames(par)<-c("gamma","sigma")
 
 

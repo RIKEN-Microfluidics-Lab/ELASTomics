@@ -4,7 +4,7 @@ library(matlib)
 library(numbers)
 library(reshape2)
 # compute a single radius
-elast.comp.radius <- function(DTD.scaled,S.radii,par,scale,plot.flag){
+elast.comp.radius <- function(DTD.scaled,S.radii,par,alpha,scale,plot.flag){
   #DTD.scaled<-tig.dtd.scale[1:4,1]
   a1 <- -1.2167
   a2 <- 1.5336
@@ -20,13 +20,13 @@ elast.comp.radius <- function(DTD.scaled,S.radii,par,scale,plot.flag){
   #P.radius<-10e-9
   gamma<-par$gamma #1.138212e-13
   sigma<-par$sigma #5.359301e-06
-  alpha<- 0.0000001
-  iter_max <-10000000
+  
+  iter_max <-1000000
   delta_history<-matrix(nrow=101,ncol=3)
   par_history<-matrix(nrow=101,ncol=4)
   iter<-0
   eps <-1
-  while ((iter < iter_max) & (eps > 2e-2)){
+  while ((iter < iter_max) & (eps > 1e-2)){
     Imatrix<-matrix(nrow = 5,ncol = length(S.radii))
     for (j in 1:length(S.radii)) {
       S.radius<-S.radii[j]
@@ -98,7 +98,7 @@ elast.comp.radius <- function(DTD.scaled,S.radii,par,scale,plot.flag){
     #
     #
     # perhaps this parameter is the key to solve the problem
-    if (iter ==0 & plot.flag){scale <-min(abs(DTD.scaled)/Imatrix[1,]) }#  else{
+    if (iter ==0 & plot.flag){scale <-min(abs(DTD.scaled[1])/Imatrix[1,]) }#  else{
 #      scale <- scale+alpha*(min(abs(DTD.scaled)/Imatrix[1,])-scale)
 #    }# this scaling factor may be the problem...
     
@@ -109,27 +109,33 @@ elast.comp.radius <- function(DTD.scaled,S.radii,par,scale,plot.flag){
     I5<-scale*Imatrix[4,]
     I6<-scale*Imatrix[5,]
 
-#    A <- matrix(c(sum(I3*I3*kbT),-sum(I3*I4*kbT),sum(I3*I4*kbT),-sum(I4*I4*kbT)),nrow = 2,byrow=TRUE)
-#    invA <- matrix(c(-sum(I4*I4*kbT),sum(I3*I4*kbT),-sum(I3*I4*kbT),sum(I3*I3*kbT)),nrow = 2,byrow=TRUE)/det(A)
     A <- matrix(c(sum(I3*I3*kbT+4*pi*(I2-DTD.scaled)*I4),-sum(I3*I4*kbT+(I2-DTD.scaled)*I5*kbT),
                   sum(I3*I4*kbT+(I2-DTD.scaled)*I5*kbT),-sum(I4*I4*kbT+(I2-DTD.scaled)*I6*kbT)),nrow = 2,byrow=TRUE)
+#    A <- -sum(I4*I4*kbT+(I2-DTD.scaled)*I6*kbT)
     invA <- matrix(c(-sum(I4*I4*kbT+(I2-DTD.scaled)*I6*kbT),sum(I3*I4*kbT+(I2-DTD.scaled)*I5*kbT),
                      -sum(I3*I4*kbT+(I2-DTD.scaled)*I5*kbT),sum(I3*I3*kbT+4*pi*(I2-DTD.scaled)*I4)),nrow = 2,byrow=TRUE)/det(A)
-    product <- c(sum((I2-DTD.scaled)*I3*kbT),sum((I2-DTD.scaled)*I4*kbT))
-    delta <-invA %*% product
     
-    gamma<-gamma+alpha*delta[1]
-    sigma<-min(sigma+alpha*delta[2],gamma/max(S.radii)*0.999)
-    #sigma<- sigma +alpha*delta[2]
+    product <- c(sum((I2-DTD.scaled)*I3*kbT),sum((I2-DTD.scaled)*I4*kbT))
+#    product <- sum((I2-DTD.scaled)*I4*kbT)
+    
+    delta <-invA %*% product
+#    delta <- product/A
+#    
+#    gamma<-gamma+alpha*delta[1]
+#    sigma<-min(sigma+alpha*delta,gamma/max(S.radii)*0.999)
+    sigma<- sigma +alpha*delta[2]
     #gamma<- max(sigma*max(S.radii)/0.999, gamma+alpha*delta[1])
     #print(c(delta[1]/gamma,",",delta[2]/sigma) )
-    eps <- max(abs(delta[1]/gamma),abs(delta[2]/sigma))
+    #eps <- max(abs(delta[1]/gamma),abs(delta[2]/sigma))
+    #eps <- max(abs(delta[1]/gamma),abs(delta[2]/sigma))
+    eps <- abs(delta[2]/sigma)
     if(mod(iter,iter_max/100) ==0){
       DTD.data <- data.frame(t(rbind(S.radii,DTD.scaled,I2)))
       colnames(DTD.data)<-c("S.radii","DTD.scaled","DTD.estimated")
       DTD.data.ggplot <-melt(DTD.data,id.vars  = "S.radii")
       print(ggplot(DTD.data.ggplot,aes(x=S.radii,y=value,color=variable))+geom_point())
-      print(c(iter, abs(delta[1]/gamma),abs(delta[2]/sigma), gamma/sigma,sigma, gamma))
+      print(c(iter, abs(delta[1]/gamma),abs(delta[2]/sigma), gamma/sigma,sigma, gamma, sum((I2-DTD.scaled))))
+      #print(c(iter, abs(delta/sigma), gamma/sigma,sigma, gamma))
       delta_history[100*iter/iter_max+1,]<-c(iter,delta[1]/gamma,delta[2]/sigma)
       par_history[100*iter/iter_max+1,]<-c(iter,gamma,sigma,gamma/sigma)
     }
@@ -145,9 +151,9 @@ elast.comp.radius <- function(DTD.scaled,S.radii,par,scale,plot.flag){
   colnames(par_history)<-c("iter","gamma","sigma","radius")
   
   if (plot.flag){
-  print(ggplot(delta_history,aes(x=iter,y=abs(dgamma)))+geom_point()+scale_y_log10()+
+  print(
     ggplot(par_history,aes(x=iter,y=gamma))+geom_point()+
-  ggplot(delta_history,aes(x=iter,y=abs(dsigma)))+geom_point()+scale_y_log10()+
+  ggplot(melt(delta_history,id.vars="iter"),aes(x=iter,y=abs(value),color=variable))+geom_point()+scale_y_log10()+
     ggplot(par_history,aes(x=iter,y=sigma))+geom_point()+
   ggplot(par_history,aes(x=iter,y=radius))+geom_point())
   }
