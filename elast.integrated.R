@@ -52,6 +52,12 @@ p3<-FeaturePlot(tig.combined.nep,features = "dtd_FLD500",reductio="pca")
 tig.marker <- FindMarkers(tig.combined.nep,ident.1 = "TIG1-50",ident.2 = "TIG1-20", test.use = "wilcox", min.pct = 0.0,
                           print.bar = TRUE, only.pos = FALSE)
 tig.marker$gene <- rownames(tig.marker)
+symbol2entrez<-function(gene.symbol){
+  SYBOL2EG<-as.data.frame(unlist(org.Hs.egSYMBOL2EG))
+  gene.list <- SYBOL2EG[SYBOL2EG$symbol %in% gene.symbol,]
+  gene.list<-gene.list[!is.na(gene.list$gene_id),]
+  return(gene.list)
+}
 gene.list<-symbol2entrez(rownames(tig.marker[tig.marker$avg_log2FC>0.2 & tig.marker$p_val_adj<0.1,]))
 ego_result <- enrichGO(gene          = gene.list$gene_id, 
                        OrgDb         = org.Hs.eg.db,
