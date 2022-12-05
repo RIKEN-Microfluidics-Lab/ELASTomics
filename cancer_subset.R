@@ -60,10 +60,11 @@ RidgePlot(mcf10a,features = c("dtdbk_FLD004","dtdbk_FLD010",
                               "dtdbk_FLD040","dtdbk_FLD070",
                               "dtdbk_FLD150","dtdbk_FLD500"),
           group.by = "NEP")+scale_x_log10()
-par<-data.frame(t(c(2e-11,5.359301e-06)))
+#par<-data.frame(t(c(2e-11,1e-02)))
+par<-data.frame(t(c(1.138212e-13,4.859301e-06)))
 colnames(par)<-c("gamma","sigma")
 
 
-output <- elast.comp.radius(mcf10a_dtd$cancer4TTCGCTGCAATGCAGG,S.radii,par,scale,plot.flag=TRUE)
+output <- elast.comp.radius(mcf10a_dtd[seq(1,4),]$cancer4AAGCATCAGCCTAACT,S.radii[seq(1,4)],par,1e-6,scale,plot.flag=TRUE)
 
-
+mcf10a_dtd$cancer4AAGCATCAGCCTAACT
