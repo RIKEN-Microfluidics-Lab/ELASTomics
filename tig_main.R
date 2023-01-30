@@ -58,11 +58,13 @@ DimPlot(tig.nep, reduction = "pca", label = TRUE)
 source("elast.integrated.R")
 DimPlot(tig.combined, reduction = "pca", label = FALSE)
 DimPlot(tig.combined, reduction = "pca", label = FALSE,group.by = "condition")
-VlnPlot(tig.combined.nep,features = "dtd_FLD004")+scale_x_discrete(limits=c("TIG1-20", "TIG1-50"))+scale_fill_manual(values = c( "#0072B2","#D55E00"))+NoLegend()
+VlnPlot(tig.combined.nep,features = "dtd_FLD004", pt.size = 0.1)+scale_x_discrete(limits=c("TIG1-20", "TIG1-50"))+scale_fill_manual(values = c( "#0072B2","#D55E00"))+NoLegend()
+VlnPlot(tig.combined.ctl,features = "CDKN1A")+scale_x_discrete(limits=c("TIG1-20", "TIG1-50"))+scale_fill_manual(values = c("#0072B2","#D55E00"))+NoLegend()
 VlnPlot(tig.combined.nep,features = "CAV1")+scale_x_discrete(limits=c("TIG1-20", "TIG1-50"))+scale_fill_manual(values = c( "#0072B2","#D55E00"))+NoLegend()
 VlnPlot(tig.combined.ctl,features = "CDKN1A")+scale_x_discrete(limits=c("TIG1-20", "TIG1-50"))+scale_fill_manual(values = c( "#0072B2","#D55E00"))+NoLegend()
-FeatureScatter(tig.combined.nep, feature1 = 'FLD004', feature2 = 'FOS', cols = c("#0072B2","#D55E00"))
-
+tig.combined.nep <- NormalizeData(tig.combined.nep,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
+FeaturePlot(tig.combined.nep, reduction = "pca", feature = 'FLD500')
+FeatureScatter(tig.combined.nep, feature1 = 'FLD004', feature2 = 'KLF2', cols = c("#0072B2","#D55E00"))
 
 source("elast.glmnet.R")
 ggplot(cors,aes(x=rank,y=cors,label=gene))+geom_point()+
@@ -70,6 +72,9 @@ ggplot(cors,aes(x=rank,y=cors,label=gene))+geom_point()+
   geom_point(data=subset(cors, gene %in% c("AC007952.4","AC091271.1","ABL2","FOS","RRAD","RHOB","RPL22L1","YWHAH","RASD1","AL021155.5","BTG2","KLF2")),aes(y=cors,x=rank,color="red"))+
   geom_text_repel(data=subset(cors,gene %in% c("AC007952.4","AC091271.1","ABL2","FOS","RRAD","RHOB","RPL22L1","YWHAH","RASD1","AL021155.5","BTG2","KLF2")),aes(y=cors,x=rank,label=gene,fontface = "italic"))+
   theme_bw()+ylim(c(-0.25,0.5))+NoLegend()
+
+
+
 
 # re-scale the dtd data with the concentration of the dtd molecules in the solution
 source("elast.rescale.dtd.R")
