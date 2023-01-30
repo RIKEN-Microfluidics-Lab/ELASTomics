@@ -87,7 +87,8 @@ DTDtable1 <- DTDtable[DTDtable$Venus > 0.5,]
 DTDtable %>%
   ggplot(aes(x = Venus, y = Sum)) +
   geom_point() +
-  geom_density_2d_filled() +xlim(-0.5, 2.5) +ylim(-5, 25) +scale_y_sqrt()
+  geom_density_2d()+scale_y_log10()+scale_x_log10()+xlim(-0.5, 2.5)+ylim(-5, 20)+theme_bw()
++scale_y_sqrt()+theme_bw()
   theme_minimal(base_size = 20) 
 
   
