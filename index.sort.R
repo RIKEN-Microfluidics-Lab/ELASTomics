@@ -67,27 +67,29 @@ index.seurat <- NormalizeData(index.seurat,normalization.method ="CLR",assay = "
 FeatureScatter(index.seurat,feature1="facs_Venus",feature2="FLD500-ACATTGGC")
 VlnPlot(index.seurat,features=c("FLD004-AACGTGAT","FLD010-AAACATCG","FLD040-ATGCCTAA","FLD070-AGTGGTCA","FLD150-ACCACTGT","FLD500-ACATTGGC"),slot="counts")
 
-DTDtable <- bind_cols(as.data.frame(t(index.seurat[["DTD"]][c("FLD004-AACGTGAT", "FLD010-AAACATCG", "FLD040-ATGCCTAA", "FLD070-AGTGGTCA", "FLD150-ACCACTGT", "FLD500-ACATTGGC")])), as.data.frame(t(index.seurat[["facs"]]["Venus"])))
+#DTDtable <- bind_cols(as.data.frame(t(index.seurat[["DTD"]][c("FLD004-AACGTGAT", "FLD010-AAACATCG", "FLD040-ATGCCTAA", "FLD070-AGTGGTCA", "FLD150-ACCACTGT", "FLD500-ACATTGGC")])), as.data.frame(t(index.seurat[["facs"]]["Venus"])))
+DTDtable <- bind_cols(as.data.frame(t(index.seurat[["DTD"]]@counts)), as.data.frame(t(index.seurat[["facs"]]@counts)))
+DTDtable <- DTDtable[c("FLD004-AACGTGAT", "FLD010-AAACATCG", "FLD040-ATGCCTAA", "FLD070-AGTGGTCA", "FLD150-ACCACTGT", "FLD500-ACATTGGC", "Venus")]
 colnames(DTDtable) <- c("FLD004","FLD010","FLD040","FLD070","FLD150","FLD500","Venus")
 DTDtable$Sum <- DTDtable$FLD004+DTDtable$FLD010+DTDtable$FLD040+DTDtable$FLD070+DTDtable$FLD150+DTDtable$FLD500
 DTDtable$Plot <- str_sub(rownames(DTDtable), start = 9, end = 9)
 DTDtable$Plot1 <- if_else(as.integer(str_sub(rownames(DTDtable), start = 11, end = 11)) < 4, true = 1, false = 2)
 DTDtable$Plot <- paste(DTDtable$Plot, DTDtable$Plot1, sep = "") 
 
-g <- ggplot(DTDtable, aes(y = Sum, x = Plot),color = Plot)
-g <- g + geom_point(position = "identity", alpha = 0.8)
-g <- g + geom_boxplot(color = c("#EA5514", "#F39800", "#00A0E9", "#036EB8"), alpha = 1)
-g <- g + geom_jitter(size = 2, width = 0.2)
+g <- ggplot(DTDtable, aes(y = FLD500, x = Plot),color = Plot) + geom_point(position = "identity", alpha = 0.8) +
+  geom_boxplot(color = c("#EA5514", "#F39800", "#00A0E9", "#036EB8"), alpha = 1) +
+  geom_jitter(size = 2, width = 0.2) + scale_y_log10()+theme_classic()
 plot(g)
 
-g <- ggplot(DTDtable, aes(y = Sum, x = Venus, color = Plot))+geom_point()+ scale_color_manual(values = c("#EA5514", "#F39800", "#00A0E9", "#036EB8"))+theme_bw()
+g <- ggplot(DTDtable, aes(y = FLD500, x = Venus, color = Plot))+geom_point()+ scale_color_manual(values = c("#EA5514", "#F39800", "#00A0E9", "#036EB8"))+theme_bw()
 plot(g)  
 
-DTDtable1 <- DTDtable[DTDtable$Venus > 0.5,]
 DTDtable %>%
-  ggplot(aes(x = Venus, y = Sum)) +
+  ggplot(aes(x = Venus, y = FLD500)) +
   geom_point() +
-  geom_density_2d()+scale_y_log10()+scale_x_log10()+xlim(-0.5, 2.5)+ylim(-5, 20)+theme_bw()
+  geom_density_2d()+scale_y_log10()+scale_x_log10()+theme_classic()
+cor(DTDtable$Venus, DTDtable$FLD500, method="spearman")
+
 +scale_y_sqrt()+theme_bw()
   theme_minimal(base_size = 20) 
 
