@@ -45,8 +45,8 @@ en.model.beta <-data.frame(coef(en.model, s="lambda.min"))
 en.model.beta$gene <- rownames(en.model.beta)
 en.model.beta$cors <- cors.sig[en.model.beta$gene,]$cors
 en.model.beta <- na.omit(en.model.beta)
-ggplot(en.model.beta, aes(x = cors, y = s1, label = gene))+geom_point()+theme_bw() +
-  geom_point(data=subset(en.model.beta, abs(s1) > 0.1 & abs(cors - 0.05) > 0.25), color = "red")+
+ggplot(en.model.beta, aes(x = cors, y = s1, label = gene))+geom_point()+ theme_classic() +
+  geom_point(data=subset(en.model.beta, abs(s1) > 0.1 & abs(cors - 0.05) > 0.25), color = "red")#+
   geom_text_repel(aes(label=ifelse(abs(s1) > 0.1 & abs(cors - 0.05) > 0.25,as.character(gene),'')))
 
 en.model.plus.beta <- en.model.beta[en.model.beta$s1>0,]
