@@ -18,10 +18,10 @@ symbol2entrez.order <- function(genes){
 gene_list_log2fc_cor <- symbol2entrez.order(MCF7)  
 gse_result_cor<- gseGO(geneList     = gene_list_log2fc_cor,
                        OrgDb        = org.Hs.eg.db,
-                       ont          = "BP",
+                       ont          = "MF",
                        minGSSize    = 12,
                        pAdjustMethod = "BH",
-                       pvalueCutoff = 0.05,
+                       pvalueCutoff = 0.01,
                        verbose      = FALSE)
 
 symbol2entrez.order <- function(genes){
@@ -41,10 +41,10 @@ symbol2entrez.order <- function(genes){
 gene_list_log2fc_fol <- symbol2entrez.order(MCF7)  
 gse_result_fol<- gseGO(geneList     = gene_list_log2fc_fol,
                        OrgDb        = org.Hs.eg.db,
-                       ont          = "BP",
+                       ont          = "MF",
                        minGSSize    = 12,
                        pAdjustMethod = "BH",
-                       pvalueCutoff = 0.5,
+                       pvalueCutoff = 0.01,
                        verbose      = FALSE)
 
 View(gse_result_cor@result)
@@ -53,11 +53,11 @@ View(gse_result_fol@result)
 dotplot(gse_result_cor,showCategory = 12)
 dotplot(gse_result_fol,showCategory = 12)
 GSEA_cor <- gse_result_cor@result
-GSEA_cor <- GSEA_cor[GSEA_cor$p.adjust<0.01, ]
+GSEA_cor <- GSEA_cor[GSEA_cor$p.adjust < 0.05, ]
 GSEA_cor <- GSEA_cor[,c(1, 2, 4)]
 colnames(GSEA_cor) <- c("ID", "Description", "Cor_Score")
 GSEA_fol <- gse_result_fol@result
-GSEA_fol <- GSEA_fol[GSEA_fol$p.adjust<0.01, ]
+GSEA_fol <- GSEA_fol[GSEA_fol$p.adjust < 0.05, ]
 GSEA_fol <- GSEA_fol[,c(1, 2, 4)]
 colnames(GSEA_fol) <- c("ID", "Description", "Fol_Score")
 GSEA_full <- full_join(x = GSEA_cor, y= GSEA_fol, by = "ID")
@@ -78,12 +78,12 @@ GSEA_full[, 2] <- as.numeric(GSEA_full[, 2])
 GSEA_full <- as.matrix(GSEA_full)
 pheatmap::pheatmap(t(GSEA_full))
 
-#cytoplasmic translation
-g1 <- gseaplot(gse_result_fol, by = "runningScore", geneSetID = "GO:0002181")
-g2 <- gseaplot(gse_result_cor, by = "runningScore", geneSetID = "GO:0002181")
+#MHC class II protein complex binding
+g1 <- gseaplot(gse_result_fol, by = "runningScore", geneSetID = "GO:0023026")
+g2 <- gseaplot(gse_result_cor, by = "runningScore", geneSetID = "GO:0023026")
 gridExtra::grid.arrange(g1, g2, nrow = 2) 
 
-#actin filament depolymerization
-g1 <- gseaplot(gse_result_fol, by = "runningScore", geneSetID = "GO:0030042")
-g2 <- gseaplot(gse_result_cor, by = "runningScore", geneSetID = "GO:0030042")
+#symporter activity
+g1 <- gseaplot(gse_result_fol, by = "runningScore", geneSetID = "GO:0015293")
+g2 <- gseaplot(gse_result_cor, by = "runningScore", geneSetID = "GO:0015293")
 gridExtra::grid.arrange(g1, g2, nrow = 2)
