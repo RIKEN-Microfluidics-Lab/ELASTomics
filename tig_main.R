@@ -7,7 +7,6 @@ library(RCurl)
 library(Matrix)
 library(openxlsx)
 library(Seurat)
-library(SingleCellSignalR)
 library(seqinr)
 library(stringr)
 rdir <- "/home/samba/public/shintaku/github/ELASTomics/"
@@ -31,6 +30,9 @@ tig <- NormalizeData(tig, normalization.method = "LogNormalize", scale.factor = 
 # mitochondrial gene percent and remove dead cells
 tig[["percent.mt"]] <- PercentageFeatureSet(tig, pattern = "^MT-")
 tig <- subset(tig, subset= percent.mt<5)
+tig <- subset(tig, subset = nCount_RNA > 2000)
+tig <- subset(tig, subset = nCount_RNA < 60000)
+FeatureScatter(tig,feature1 = "nCount_RNA" ,feature2 = "nFeature_RNA", group.by = "condition")
 
 # merge all the tig data
 tig <- FindVariableFeatures(tig, selection.method = "vst", nfeatures = 300)
@@ -63,8 +65,8 @@ VlnPlot(tig.combined.ctl,features = "CDKN1A")+scale_x_discrete(limits=c("TIG1-20
 VlnPlot(tig.combined.nep,features = "CAV1")+scale_x_discrete(limits=c("TIG1-20", "TIG1-50"))+scale_fill_manual(values = c( "#0072B2","#D55E00"))+NoLegend()
 VlnPlot(tig.combined.ctl,features = "CDKN1A")+scale_x_discrete(limits=c("TIG1-20", "TIG1-50"))+scale_fill_manual(values = c( "#0072B2","#D55E00"))+NoLegend()
 tig.combined.nep <- NormalizeData(tig.combined.nep,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
-FeaturePlot(tig.combined.nep, reduction = "pca", feature = 'FLD500')
-FeatureScatter(tig.combined.nep, feature1 = 'FLD004', feature2 = 'KLF2', cols = c("#0072B2","#D55E00"))
+FeaturePlot(tig.combined.nep, reduction = "pca", feature = 'FLD004', slot = "data")
+FeatureScatter(tig.combined.nep, feature1 = 'FLD004', feature2 = 'YWHAH', cols = c("#0072B2","#D55E00"))
 
 source("elast.glmnet.R")
 ggplot(cors,aes(x=rank,y=cors,label=gene))+geom_point()+
