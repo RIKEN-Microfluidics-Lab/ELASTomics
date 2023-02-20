@@ -160,7 +160,7 @@ elast.comp.radius <- function(DTD.scaled,S.radii,par,alpha,scale,plot.flag){
   return(c(gamma,sigma,scale))
 }
 #
-# compute multipe radii
+# compute multiple radii
 #
 elast.comp.radii <- function(DTD.scaled,S.radii,plot.flag){
   #Calculate pore size

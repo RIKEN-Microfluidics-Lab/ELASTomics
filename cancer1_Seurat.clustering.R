@@ -1,7 +1,7 @@
 cancer <- NormalizeData(cancer, normalization.method = "LogNormalize", scale.factor = 1e5)
 cancer[["percent.mt"]] <- PercentageFeatureSet(cancer, pattern = "^MT-")
 
-#cancer <- subset(cancer, subset= percent.mt<5)
+cancer <- subset(cancer, subset= percent.mt<10 & nCount_RNA>=2000)
 #
 #
 # merge all the tig data
@@ -56,7 +56,7 @@ FeaturePlot(subset(cancer,subset=run=="first"),reduction="pca",
 # VlnPlot(subset(cancer,subset=run=="first"),features=c("percent.mt","nCount_RNA"),group.by="celltype")
 
 cancer1<-subset(cancer,subset=run=="first")
-cancer1 <- RenameIdents(cancer1, `1` = "MCF7", `2` = "MCF7",`0` = "PC3")
+cancer1 <- RenameIdents(cancer1, `1` = "PC3", `2` = "MCF7",`0` = "PC3")
 cancer1[["celltype"]]<-Idents(cancer1)
 
 cancer2<-subset(cancer,subset=run=="second")

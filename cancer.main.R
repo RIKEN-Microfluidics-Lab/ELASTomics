@@ -51,6 +51,7 @@ source("cancer1_Seurat.clustering.R")
 #cancer <- merge(cancer1,y=cancer2)
 
 wdir<- "/home/samba/sanger/shintaku/ELASTomics/20220603HiSeqX012_013/cancer3_12/outs/filtered_feature_bc_matrix/"
+
 cancer3 <-load.elast.data(wdir,"cancer3",100)
 cancer3[["run"]]<-"third"
 cancer<-merge(cancer3,y=cancer_merge)
@@ -62,38 +63,48 @@ cancer4[["run"]]<-"forth"
 cancer<-merge(cancer4,y=cancer_merge123)
 source("cancer4_Seurat.clustering.R")
 
+wdir<- "/home/samba/sanger/shintaku/ELASTomics/20221012HiSeqX016/MCF7_10A/outs/filtered_feature_bc_matrix/"
+cancer5 <- load.elast.data(wdir,"cancer5",100)
+cancer5[["run"]]<-"fifth"
+cancer<-merge(cancer5,y=cancer_merge1234)
+source("cancer5_Seurat.clustering.R")
 
+wdir<- "/home/samba/sanger/shintaku/ELASTomics/20221012HiSeqX017/MCF7_10A/outs/filtered_feature_bc_matrix/"
+cancer6 <- load.elast.data(wdir,"cancer6",100)
+cancer6[["run"]]<-"sixth"
+cancer<-merge(cancer6,y=cancer_merge12345)
+source("cancer6_Seurat.clustering.R")
 
 #
 #
 #
 
-p1<-RidgePlot(subset(subset(cancer_merge1234,subset=celltype=="PC3"),subset=NEP=="40V"),
+p1<-RidgePlot(subset(subset(cancer_merge123456,subset=celltype=="MCF10A"),subset=NEP=="40V"),
           features = "dtd_FLD004",group.by = "condition")
-p2<-RidgePlot(subset(subset(cancer_merge1234,subset=NEP=="40V"),subset=condition=="normal"),
+p2<-RidgePlot(subset(subset(cancer_merge123456,subset=NEP=="40V"),subset=condition=="normal"),
             features = "dtd_FLD004",group.by = "celltype")
-p3<-RidgePlot(subset(subset(cancer_merge1234,subset=celltype=="PC3"),subset=condition=="normal"),
+p3<-RidgePlot(subset(subset(cancer_merge123456,subset=celltype=="MCF10A"),subset=condition=="normal"),
           features = "dtd_FLD004",group.by = "NEP")
 gridExtra::grid.arrange(p1,p2,p3,nrow=1)
 
-cancer_40V<-subset(subset(cancer_merge1234,subset=NEP=="40V"),subset=condition=="normal")
+cancer_40V<-subset(subset(cancer_merge123456,subset=NEP=="40V"),subset=condition=="normal")
 cancer_40V_melt <- data.frame(t(cancer_40V[["DTD"]]@data))
 cancer_40V_melt$celltype <- unlist(cancer_40V[["celltype"]])
 ggplot(cancer_40V_melt,aes(x=FLD004,y=..density..,fill=celltype))+
   geom_density(aes(color = celltype, alpha = 0.2))
 
-FeatureScatter(subset(cancer_merge1234, subset = percent.mt < 10 & nCount_RNA>=2000 & run=="first"),
+FeatureScatter(subset(cancer_merge123456, subset = percent.mt < 10 & nCount_RNA>=2000 & run=="first"),
                       feature1 = "dtd_P3NE35",feature2 = "dtd_MC7E37",
                group.by = "celltype",slot="counts")+xlim(c(0,10000))+ylim(c(0,100000))+
-  FeatureScatter(subset(cancer_merge1234, subset = percent.mt < 10 & nCount_RNA>=2000 & run=="second"),
+  FeatureScatter(subset(cancer_merge123456, subset = percent.mt < 10 & nCount_RNA>=2000 & run=="second"),
                  feature1 = "dtd_MM2E32",feature2 = "dtd_P3CE36",
                  group.by = "celltype",slot="counts")+xlim(c(0,10000))+ylim(c(0,10000))+
-  FeatureScatter(subset(cancer_merge1234, subset = percent.mt < 10 & nCount_RNA>=2000 & run=="third"),
+  FeatureScatter(subset(cancer_merge123456, subset = percent.mt < 10 & nCount_RNA>=2000 & run=="third"),
                  feature1 = "dtd_MM2E32",feature2 = "dtd_P3HE33",
                  group.by = "celltype",slot="counts")+xlim(c(0,10000))+ylim(c(0,10000))+
-  FeatureScatter(subset(cancer_merge1234, subset = percent.mt < 10 & nCount_RNA>=2000 & run=="forth"),feature1 = "dtd_M1AE31",feature2 = "dtd_P3ME34",
+  FeatureScatter(subset(cancer_merge123456, subset = percent.mt < 10 & nCount_RNA>=2000 & run=="forth"),feature1 = "dtd_M1AE31",feature2 = "dtd_P3ME34",
                  group.by = "celltype",slot="counts")+xlim(c(0,10000))+ylim(c(0,10000))
-cancer_merge <- subset(subset(cancer_merge1234,subset=NEP=="75V",invert=TRUE),subset=condition=="normal")
+cancer_merge <- subset(subset(cancer_merge123456,subset=NEP=="75V",invert=TRUE),subset=condition=="normal")
 
 # RidgePlot(subset(cancer_merge,subset=celltype=="MCF10A"),features = "dtd_FLD004",group.by = "NEP")+
 #   RidgePlot(subset(cancer_merge,subset=celltype=="MCF7"),features = "dtd_FLD004",group.by = "NEP")+

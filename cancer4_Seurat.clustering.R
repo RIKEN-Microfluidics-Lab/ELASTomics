@@ -1,7 +1,7 @@
 cancer <- FindVariableFeatures(cancer, selection.method = "vst", nfeatures = 300)
 cancer <- NormalizeData(cancer,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
 cancer[["percent.mt"]] <- PercentageFeatureSet(cancer, pattern = "^MT-")
-#cancer <- subset(cancer,subset=percent.mt<5)
+cancer <- subset(cancer, subset= percent.mt<10 & nCount_RNA>=2000)
 #
 # PCA and visualize
 all.genes <- rownames(cancer)
@@ -43,7 +43,7 @@ DimPlot(cancer4, reduction = "pca")+
   FeaturePlot(cancer4,features = "dtd_FLD004")
 DimPlot(cancer4,reduction = "pca")+
   FeaturePlot(cancer4,
-              features = c("CCDC190","CAVIN3","CD163L1","PLAU","FOSL1"),reduction = "pca",
+              features = c("DUSP1","CAVIN3","CD163L1","PLAU","FOSL1"),reduction = "pca",
               max.cutoff = 4)
 DimPlot(cancer,reduction = "pca",group.by = "celltype")+
   FeaturePlot(cancer,
@@ -51,7 +51,7 @@ DimPlot(cancer,reduction = "pca",group.by = "celltype")+
               max.cutoff = 4)
 
 
-cancer4 <- RenameIdents(cancer4, `2` = "PC3", `3` = "PC3", `1` = "MCF10A", `0` = "MDAMB231")
+cancer4 <- RenameIdents(cancer4, `0` = "PC3", `1` = "MCF10A", `2` = "MDAMB231")
 
 #cancer1 <- RenameIdents(cancer1, `0` = "MCF7_NEP", `1` = "PC3_NEP")
 cancer_mcf10<-subset(cancer4,idents = "MCF10A")
@@ -114,9 +114,9 @@ cancer_merge1234 <- RunTSNE(cancer_merge1234,dims=1:10)
       FeaturePlot(subset(subset(cancer_merge1234,subset=percent.mt<5),subset=condition=="normal"),features ="nCount_RNA",
               reduction = "tsne",max.cutoff = 10000)
   
-DimPlot(subset(cancer_merge1234,subset=percent.mt<5),reduction = "umap",group.by = "celltype")+
+DimPlot(subset(subset(cancer_merge1234,subset=NEP=="75V",invert=TRUE ),subset=condition=="normal"),reduction = "umap",group.by = "celltype")+
   FeaturePlot(subset(cancer_merge1234,subset=percent.mt<5),
-              features = c("CYBA","S100A2","CCDC190","CAVIN3","CD163L1","PLAU","FOSL1"),
+              features = c("CYBA","S100A2","DUSP1","CAVIN3","CD163L1","PLAU","FOSL1"),
               reduction = "umap",
               max.cutoff = 4)
 

@@ -1,6 +1,7 @@
 cancer <- FindVariableFeatures(cancer, selection.method = "vst", nfeatures = 300)
 cancer <- NormalizeData(cancer,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
 cancer[["percent.mt"]] <- PercentageFeatureSet(cancer, pattern = "^MT-")
+cancer <- subset(cancer, subset= percent.mt<10 & nCount_RNA>=2000)
 
 
 #
@@ -35,7 +36,7 @@ DimPlot(cancer, reduction = "pca")+
 cancer3<-subset(cancer,subset=run=="third")
 DimPlot(subset(cancer3,subset=percent.mt<5),reduction = "pca")+
   FeaturePlot(subset(cancer3,subset=percent.mt<5),
-              features = c("CCDC190","CAVIN3","CD163L1"),reduction = "pca",
+              features = c("CCDC190","CAVIN3","CD163L1","dtd_FLD004"),reduction = "pca",
               max.cutoff = 4)
 
 cancer3 <- FindVariableFeatures(cancer3, selection.method = "vst", nfeatures = 300)
@@ -45,11 +46,11 @@ cancer3 <- RunPCA(cancer3, npcs=50, features = VariableFeatures(object = cancer3
 
 cancer3 <- FindNeighbors(cancer3, dims = 1:10)
 cancer3 <- FindClusters(cancer3, resolution = 0.05)
-DimPlot(cancer3, reduction = "pca")+
+DimPlot(cancer3, reduction = "umap",group.by = "celltype")+
   FeaturePlot(cancer3,features = "dtd_FLD004")
-DimPlot(subset(cancer3,subset=percent.mt<5),reduction = "umap")+
+DimPlot(subset(cancer3,subset=percent.mt<5),reduction = "pca")+
   FeaturePlot(subset(cancer3,subset=percent.mt<5),
-              features = c("CCDC190","CAVIN3","CD163L1","PLAU","FOSL1"),reduction = "umap",
+              features = c("DUSP1","CYBA","CAVIN3","S100A2"),reduction = "pca",
               max.cutoff = 4)
 
 

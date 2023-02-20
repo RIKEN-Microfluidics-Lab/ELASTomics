@@ -12,7 +12,7 @@ a6 <- -1.2160
 a7 <- 1.6470
 b1 <- 9 * sqrt(2) * pi * pi / 4
 C <-1.39e-46
-kbT<-300*1.380649e-23
+kbT<-310*1.380649e-23
 #KotnikT,RemsL,TarekM,MiklavcicD,
 #Membrane elecgtroporation and electropermeabilization: mechanism and models
 #Annual Review of Biophysics
