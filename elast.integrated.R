@@ -38,6 +38,7 @@ FeaturePlot(tig.combined,features = c("HSD17B2","ITGA8","COLEC10","DLGAP5","CENP
 
 
 tig.combined <- NormalizeData(tig.combined,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
+tig.combined <- NormalizeData(tig.combined, normalization.method = "LogNormalize", scale.factor = 1e5)
 tig.combined.nep <- subset(tig.combined,subset=condition=="NEP")
 tig.combined.ctl <- subset(tig.combined,subset=condition=="CTL")
 
