@@ -26,7 +26,8 @@ cancer <- FindClusters(cancer, resolution = 0.05)
 # Retreiving the results of the preprocessing from the Seurat object
 cluster = as.numeric(Idents(cancer))
 cancer <- RunUMAP(cancer, dims = 1:10)
-DimPlot(cancer, reduction = "pca")+
+cancer <- RunTSNE(cancer, dims = 1:10)
+DimPlot(cancer, reduction = "tsne",group.by = "celltype")+
   DimPlot(subset(cancer,subset=run=="third"),reduction="pca")+
   FeaturePlot(cancer,features = c("dtd_FLD500"), reduction = "umap")+
   FeaturePlot(cancer,features = "percent.mt",reduction = "pca",max.cutoff = 10)
