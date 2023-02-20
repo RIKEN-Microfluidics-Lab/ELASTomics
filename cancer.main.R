@@ -9,10 +9,8 @@ library(RCurl)
 library(Matrix)
 library(openxlsx)
 library(Seurat)
-library(SingleCellSignalR)
 library(seqinr)
 library(stringr)
-library(ggbeeswarm)
 refexp <- read.csv("/home/samba/sanger/shintaku/ELASTomics/Expression_22Q2_Public_subsetted.csv")
 refexp<-data.frame(t(refexp))
 celltype<-refexp[2,]
@@ -56,24 +54,25 @@ source("elast.load.elast.data.R")
 wdir <- "/home/samba/sanger/shintaku/ELASTomics/20220603HiSeqX010_011/cancer1_12/outs/filtered_feature_bc_matrix/"
 cancer1 <-load.elast.data(wdir,"cancer1",100)
 cancer1[["run"]]<-"first"
+cancer <-cancer1
+source("cancer1_Seurat.clustering.R")
+
 wdir<- "/home/samba/sanger/shintaku/ELASTomics/20220603HiSeqX010_011/cancer2_12/outs/filtered_feature_bc_matrix/"
 cancer2 <-load.elast.data(wdir,"cancer2",100)
 cancer2[["run"]]<-"second"
 cancer <-cancer2
 source("cancer2_Seurat.clustering.R")
-cancer <- merge(cancer1,y=cancer2)
-source("cancer1_Seurat.clustering.R")
 
 wdir<- "/home/samba/sanger/shintaku/ELASTomics/20220603HiSeqX012_013/cancer3_12/outs/filtered_feature_bc_matrix/"
 cancer3 <-load.elast.data(wdir,"cancer3",100)
 cancer3[["run"]]<-"third"
-cancer<-merge(cancer3,y=cancer_merge)
+cancer<-cancer3
 source("cancer3_Seurat.clustering.R")
 
 wdir<- "/home/samba/sanger/shintaku/ELASTomics/20220603HiSeqX012_013/cancer4_12/outs/filtered_feature_bc_matrix/"
 cancer4 <-load.elast.data(wdir,"cancer4",100)
 cancer4[["run"]]<-"forth"
-cancer<-merge(cancer4,y=cancer_merge123)
+cancer<-cancer4
 source("cancer4_Seurat.clustering.R")
 
 wdir<- "/home/samba/sanger/shintaku/ELASTomics/20221012HiSeqX016/MCF7_10A/outs/filtered_feature_bc_matrix/"
@@ -87,16 +86,45 @@ cancer6 <-load.elast.data(wdir,"cancer6",100)
 cancer6[["run"]]<-"sixth"
 cancer<-cancer6
 source("cancer6_Seurat.clustering.R")
-VlnPlot(subset(subset(cancer_merge123456,subset=run==c("fifth", "sixth")),subset=celltype=="MCF10A"),features = "dtd_FLD004",group.by = "condition", cols = c("#D55E00", "#0072B2"))+ scale_x_discrete(limits=c("normal", "CytoD"))
+
+cancer_merge12 <- merge(cancer1,y=cancer2)
+cancer_merge34 <- merge(cancer3,y=cancer4)
+cancer_merge56 <- merge(cancer5,y=cancer6)
+cancer_merge1234 <- merge(cancer_merge12,y=cancer_merge34)
+cancer_merge123456 <- merge(cancer_merge1234,y=cancer_merge56)
+rm(cancer1, cancer2, cancer3, cancer4, cancer5, cancer6, cancer_merge12, cancer_merge34, cancer_merge56, cancer_merge1234)
+FeatureScatter(cancer_merge123456,feature1 = "nCount_RNA" ,feature2 = "nFeature_RNA")
+cancer_merge123456 <- subset(cancer_merge123456, subset = nCount_RNA > 2000)
+cancer_merge123456 <- subset(cancer_merge123456, subset = nCount_RNA < 100000)
+#cancer_merge123456 <- subset(cancer_merge123456, subset = nCount_RNA < 100000)
+cancer_merge123456 <- NormalizeData(cancer_merge123456, normalization.method = "LogNormalize", scale.factor = 1e5)
+cancer_merge123456  <- NormalizeData(cancer_merge123456 ,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
+cancer_merge123456 <- FindVariableFeatures(cancer_merge123456, selection.method = "vst", nfeatures = 300)
+all.genes <- rownames(cancer_merge123456)
+cancer_merge123456 <- ScaleData(cancer_merge123456, features = all.genes)
+cancer_merge123456 <- RunPCA(cancer_merge123456, npcs=50, features = VariableFeatures(object = cancer_merge123456))
+cancer_merge123456 <- JackStraw(cancer_merge123456, num.replicate = 100)
+cancer_merge123456 <- ScoreJackStraw(cancer_merge123456, dims = 1:20)
+JackStrawPlot(cancer_merge123456, dims = 1:20)
+ElbowPlot(cancer_merge123456)
+cancer_merge123456 <- RunUMAP(cancer_merge123456, dims = 1:10)
+cancer_merge123456 <- RunTSNE(cancer_merge123456, npcs=50, features = VariableFeatures(object = cancer_merge123456))
+DimPlot(subset(subset(cancer_merge123456, subset = NEP=="75V", invert =TRUE), subset = condition=="normal") ,reduction="umap" ,group.by = "celltype")
+FeaturePlot(subset(subset(cancer_merge123456, subset = NEP=="75V", invert =TRUE), subset = condition=="normal") ,reduction="umap" ,features = "nCount_RNA")
+#
+#Figure
+#
 VlnPlot(subset(subset(cancer_merge123456,subset=run==c("fifth", "sixth")),subset=celltype=="MCF10A"),features = "dtd_FLD004",group.by = "condition", cols = c("#D55E00", "#0072B2"), pt.size = 0)+ scale_x_discrete(limits=c("normal", "CytoD"))+
   geom_boxplot(width = 0.1, color = "black", fill="white")  
-VlnPlot(subset(cancer_merge123456,subset=celltype=="MCF7"),features = "dtd_FLD004",group.by = "NEP", cols = c("#D55E00", "#0072B2"))
-VlnPlot(subset(subset(cancer_merge123456,subset=condition=="normal"),subset=celltype=="PC3"),features = "dtd_FLD004",group.by = "NEP", cols = c("#D55E00","#40A39A", "#0072B2")) 
+VlnPlot(subset(subset(cancer_merge123456,subset=condition=="normal"),subset=celltype=="PC3"),features = "dtd_FLD004",group.by = "NEP", cols = c("#D55E00","#40A39A", "#0072B2"), pt.size = 0)+ scale_x_discrete(limits=c("0V", "40V", "75V"))+
+  geom_boxplot(width = 0.1, color = "black", fill="white")  
 RidgePlot(subset(subset(cancer_merge123456,subset=NEP=="40V"),subset=condition=="normal"), features = "dtd_FLD004",group.by = "celltype")
 RidgePlot(subset(subset(cancer_merge123456,subset=run==c("first", "second")),subset=celltype=="MCF7"),features = "dtd_FLD004",group.by = "NEP")+
-  RidgePlot(subset(subset(cancer_merge123456,subset=run==c("fifth", "sixth")),subset=celltype=="MCF7"),features = "dtd_FLD004",group.by = "NEP")
-DimPlot(subset(subset(cancer_merge123456,subset=run==c("first", "second")),subset=celltype=="MCF7") ,reduction="pca" ,group.by = "NEP")+
-  DimPlot(subset(subset(cancer_merge123456,subset=run==c("fifth", "sixth")),subset=celltype=="MCF7") ,reduction="pca" ,group.by = "NEP")
+  RidgePlot(subset(subset(cancer_merge123456,subset=run==c("fifth", "sixth")),subset=celltype=="MCF10A"),features = "dtd_FLD004",group.by = "run")
+FeatureScatter(subset(subset(cancer_merge123456, subset = NEP=="75V", invert =TRUE), subset = condition=="normal"),
+                      feature1 = "dtd_FLD004" ,feature2 = "nCount_RNA", group.by = "celltype")
+
+
 #
 # Dextran ratio
 #
@@ -124,40 +152,44 @@ rm(DTDcoc, DTDmob, DTD40V, DTD40V_dtd, DTD40V_dtd_melt)
 
 source("cancer.integrated.R")
 cancer.integrated <- NormalizeData(cancer.integrated,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
-DimPlot(subset(cancer.integrated,subset=NEP=="75V", invert=TRUE) ,reduction="umap" ,group.by = "celltype")
+cancer.integrated <- NormalizeData(cancer.integrated, normalization.method = "LogNormalize", scale.factor = 1e5)
+DimPlot(subset(cancer.integrated,subset=run==c("fifth", "sixth"), invert=TRUE), reduction="umap" ,group.by = "celltype")
 DimPlot(subset(cancer.integrated,subset=NEP=="75V", invert=TRUE) ,reduction="umap" ,group.by = "NEP", cols = c("#D55E00", "#0072B2"))
 DimPlot(subset(cancer.integrated,subset=NEP=="75V", invert=TRUE) ,reduction="umap" ,group.by = "run")
-FeaturePlot(subset(cancer.integrated,subset=NEP=="40V") ,reduction="umap" ,features = "FLD004", max.cutoff = 4)
-FeaturePlot(subset(cancer.integrated,subset=NEP=="40V") ,reduction="umap" ,features = "FLD500", max.cutoff = 4)
+FeaturePlot(subset(cancer.integrated,subset=NEP=="40V") ,reduction="umap" ,features = "FLD004")
 VlnPlot(subset(cancer.integrated,subset=NEP=="40V"), features = "FLD004", group.by = "celltype")
-VlnPlot(subset(cancer.integrated,subset=NEP=="40V"), features = "FLD004", group.by = "celltype", pt.size = 0)+
+DimPlot(subset(subset(cancer.integrated,subset=run=="fifth", invert = TRUE),subset=run=="sixth", invert = TRUE) ,reduction="umap" ,group.by = "run")
+VlnPlot(subset(cancer.integrated,subset=celltype=="MCF7"), features = "FLD004", group.by = "run")
+VlnPlot(subset(subset(cancer.integrated,subset=NEP=="40V"),subset=run==c("fifth", "sixth"), invert = TRUE), features = "FLD004", group.by = "celltype", pt.size = 0)+
   geom_boxplot(width = 0.1, color = "black", fill="white")
-VlnPlot(subset(cancer.integrated,subset=NEP=="40V"), features = "FLD500", group.by = "celltype")
-
-cancer.integrated<-NormalizeData(cancer.integrated, assay="DTD",normalization.method = "CLR", scale.factor = 1e5)
 #DNAtag("dtd_M1AE31", "dtd_MM2E32", "dtd_P3HE33", "dtd_P3ME34", "dtd_P3NE35", "dtd_P3CE36", "dtd_MC7E37")
 FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), features = "dtd_M1AE31",reduction = "umap") #MCF10Atag
 FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), features = "dtd_MM2E32",reduction = "umap", max.cutoff = 2) #MDAMB231tag
 FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), features = "dtd_P3NE35",reduction = "umap", max.cutoff = 3) #PC3tag
 FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), features = "dtd_MC7E37",reduction = "umap", max.cutoff = 6, min.cutoff = 2) #MCF7tag
 FeatureScatter(subset(cancer.integrated,subset=celltype==c("MCF7","PC3")),feature1 = "FLD004" ,feature2 = "dtd_MC7E37")
-cancer.integrated<-NormalizeData(cancer.integrated, assay="DTD",normalization.method = "LogNormalize", scale.factor = 1e5)
 
 VlnPlot(subset(cancer.integrated,subset=run==c("first", "fifth", "sixth")),features = "dtd_MC7E37",group.by = "run")
 FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"),
             features = c("dtd_M1AE31", "dtd_MM2E32", "dtd_P3HE33", "dtd_P3ME34", "dtd_P3NE35", "dtd_P3CE36", "dtd_MC7E37"),
             reduction = "umap", max.cutoff = 4, min.cutoff = 2)
 
-FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), reduction = "umap", features = "CYBA", max.cutoff = 6) #MCF7
-FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), reduction = "umap", features = "S100A2", max.cutoff = 6) #PC-3
-FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), reduction = "umap", features = "CAVIN3", max.cutoff = 4) #MDAMB231
-FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), reduction = "umap", features = "DUSP1", max.cutoff = 4) #MCF10A
+FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), reduction = "umap", features = "CYBA") #MCF7
+FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), reduction = "umap", features = "S100A2") #PC-3
+FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), reduction = "umap", features = "CAVIN3") #MDAMB231
+FeaturePlot(subset(cancer.integrated,subset=NEP=="40V"), reduction = "umap", features = "DUSP1") #MCF10A
 
 #Tukey's test
 FACS <- subset(subset(cancer_merge123456,subset=run==c("fifth", "sixth")),subset=celltype=="MCF10A")
 FACS1 <-cbind(data.frame(FACS[["DTD"]]@counts["FLD004",]), data.frame(FACS[["condition"]]))
 colnames(FACS1) <- c("FLD004", "Hash")
 t.test(FLD004 ~ Hash, data = FACS1)
+
+FACS <- subset(subset(cancer_merge123456,subset=condition=="normal"),subset=celltype=="PC3")
+FACS1 <-cbind(data.frame(FACS[["DTD"]]@counts["FLD004",]), data.frame(FACS[["NEP"]]))
+colnames(FACS1) <- c("FLD004", "Cell")
+amod <- aov(FLD004 ~ Cell, data = FACS1)
+TukeyHSD(amod)
 
 FACS <- subset(cancer.integrated,subset=NEP=="40V")
 FACS1 <-cbind(data.frame(FACS[["DTD"]]@counts["FLD004",]), data.frame(FACS[["celltype"]]))
@@ -192,41 +224,36 @@ FeatureScatter(subset(subset(cancer.integrated,subset=NEP=="40V"), subset=cellty
 #
 #Volcano
 #
-cancer.integrated.40V <-subset(subset(cancer.integrated, subset=celltype=="MCF10A", invert=TRUE), subset=NEP=="40V")
-cancer.integrated.40V <-NormalizeData(cancer.integrated.40V,assay="RNA",normalization.method = "LogNormalize", scale.factor = 1e5)
-MCF7 <- FindMarkers(cancer.integrated.40V, group.by="celltype", ident.1 = "MCF7", min.pct = 0.25, logfc.threshold = 0)
-MDA <- FindMarkers(cancer.integrated.40V, group.by="celltype", ident.1 = "MDAMB231", min.pct = 0.25, logfc.threshold = 0)
-PC3 <- FindMarkers(cancer.integrated.40V, group.by="celltype", ident.1 = "PC3", min.pct = 0.25, logfc.threshold = 0)
-MCF7_spe <- MCF7[MCF7$avg_log2FC>0, ]
-MDA_spe <- MDA[MDA$avg_log2FC>0, ]
-PC3_spe <- PC3[PC3$avg_log2FC>0, ]
-VlnPlot(cancer.integrated.40V, features = Neg_PC3only[13:36], group.by = "celltype")
-
-library(gplots)
-data <- list(MCF7spe = rownames(MCF7_spe[MCF7_spe$p_val<0.001, ]),
-             MDAspe = rownames(MDA_spe[MDA_spe$p_val<0.001, ]),
-             PC3spe = rownames(PC3_spe[PC3_spe$p_val<0.001, ]),
-             negative = cors.neg$gene)
-venn(data)
-Neg_PC3only <- setdiff(intersect(rownames(PC3_spe[PC3_spe$p_val<0.001, ]), cors.neg$gene), rownames(MDA_spe[MDA_spe$p_val<0.001, ]))
-Neg_MDAonly <- setdiff(intersect(rownames(MDA_spe[MDA_spe$p_val<0.001, ]), cors.neg$gene), rownames(PC3_spe[PC3_spe$p_val<0.001, ]))
-Neg_MDAPC3 <- intersect(intersect(rownames(PC3_spe[PC3_spe$p_val<0.001, ]), cors.neg$gene), rownames(MDA_spe[MDA_spe$p_val<0.001, ]))
+# cancer.integrated.40V <-subset(subset(cancer.integrated, subset=celltype=="MCF10A", invert=TRUE), subset=NEP=="40V")
+# cancer.integrated.40V <-NormalizeData(cancer.integrated.40V,assay="RNA",normalization.method = "LogNormalize", scale.factor = 1e5)
+# MCF7 <- FindMarkers(cancer.integrated.40V, group.by="celltype", ident.1 = "MCF7", min.pct = 0.25, logfc.threshold = 0)
+# MDA <- FindMarkers(cancer.integrated.40V, group.by="celltype", ident.1 = "MDAMB231", min.pct = 0.25, logfc.threshold = 0)
+# PC3 <- FindMarkers(cancer.integrated.40V, group.by="celltype", ident.1 = "PC3", min.pct = 0.25, logfc.threshold = 0)
+# MCF7_spe <- MCF7[MCF7$avg_log2FC>0, ]
+# MDA_spe <- MDA[MDA$avg_log2FC>0, ]
+# PC3_spe <- PC3[PC3$avg_log2FC>0, ]
+# VlnPlot(cancer.integrated.40V, features = Neg_PC3only[13:36], group.by = "celltype")
+# 
+# library(gplots)
+# data <- list(MCF7spe = rownames(MCF7_spe[MCF7_spe$p_val<0.001, ]),
+#              MDAspe = rownames(MDA_spe[MDA_spe$p_val<0.001, ]),
+#              PC3spe = rownames(PC3_spe[PC3_spe$p_val<0.001, ]),
+#              negative = cors.neg$gene)
+# venn(data)
+# Neg_PC3only <- setdiff(intersect(rownames(PC3_spe[PC3_spe$p_val<0.001, ]), cors.neg$gene), rownames(MDA_spe[MDA_spe$p_val<0.001, ]))
+# Neg_MDAonly <- setdiff(intersect(rownames(MDA_spe[MDA_spe$p_val<0.001, ]), cors.neg$gene), rownames(PC3_spe[PC3_spe$p_val<0.001, ]))
+# Neg_MDAPC3 <- intersect(intersect(rownames(PC3_spe[PC3_spe$p_val<0.001, ]), cors.neg$gene), rownames(MDA_spe[MDA_spe$p_val<0.001, ]))
 #
 # mcf10a subset 
 #
-mcf10a <- subset(subset(cancer.integrated,subset=celltype=="MCF10A"), subset=NEP=="40V")
-mcf10a <- subset(subset(cancer.integrated,subset=celltype=="MCF7"), subset=NEP=="40V")
-mcf10a <- subset(subset(cancer.integrated,subset=celltype=="MDAMB231"), subset=NEP=="40V")
-mcf10a <- subset(subset(cancer.integrated,subset=celltype=="PC3"), subset=NEP=="40V")
-mcf10a <- subset(cancer.integrated,subset=NEP=="75V")
-mcf10a <- subset(subset(cancer.integrated, subset=celltype=="MCF10A", invert=TRUE), subset=NEP=="40V")
-mcf10a <- subset(subset(cancer.integrated, subset=celltype=="PC3", invert=TRUE), subset=NEP=="40V")
 mcf10a <- subset(subset(subset(cancer.integrated, subset=celltype=="PC3", invert=TRUE), subset=celltype=="MCF10A", invert=TRUE), subset=NEP=="40V")
-
+FeatureScatter(mcf10a,feature1 = "nCount_RNA" ,feature2 = "FLD004", group.by = "run")
+VlnPlot(subset(mcf10a, subset =celltype=="MCF7"),feature = "nCount_RNA", group.by = "run")
+FeatureScatter(mcf10a,feature1 = "nCount_RNA" ,feature2 = "nFeature_RNA", group.by = "celltype")
 FeatureScatter(mcf10a,feature1 = "G2M.Score" ,feature2 = "S.Score")
 Idents(mcf10a)<-mcf10a[["NEP"]]
 mcf10a<-NormalizeData(mcf10a,assay="RNA",normalization.method = "LogNormalize", scale.factor = 1e5)
-mcf10a<-NormalizeData(mcf10a,assay="DTD",normalization.method = "CLR", scale.factor = 1e5)
+mcf10a<-NormalizeData(mcf10a,assay="DTD",normalization.method = "CLR", scale.factor = 1e2)
 
 #Correlation_mcf10a
 library(glmnet)
@@ -253,11 +280,12 @@ ggplot(data=subset(cors, abs(cors) <= 0.15),aes(x=rank,y=cors,label=gene))+geom_
 cors <- cors[order(cors$rank, decreasing=F),]
 
 library(gplots)
-MCF7 <- FindMarkers(mcf10a, group.by="celltype", ident.1 = "MCF7", ident.2 = "MDAMB231", min.pct = 0.25, logfc.threshold = 0)
+MCF7 <- FindMarkers(subset(subset(subset(cancer.integrated, subset=celltype=="PC3", invert=TRUE), subset=celltype=="MCF10A", invert=TRUE), subset=NEP=="0V"),
+                           group.by="celltype", ident.1 = "MCF7", ident.2 = "MDAMB231", min.pct = 0.25, logfc.threshold = 0)
 MCF7$gene <- rownames(MCF7)
 MCF7 <- inner_join(MCF7, cors, by="gene")
 rownames(MCF7) <- MCF7$gene 
-ggplot(MCF7,aes(x=avg_log2FC, y=cors))+geom_point(color = "black")+geom_point(subset(MCF7,subset=p_val_adj<1e-3), aes(color = "red"))+xlim(-10, 10)+theme_classic()
+ggplot(MCF7,aes(x=avg_log2FC, y=cors))+geom_point(color = "black")+theme_classic()
 ggplot(MCF7,aes(x=avg_log2FC,y=cors))+geom_point()+
   geom_point(data=subset(MCF7, abs(avg_log2FC) > 2.5),aes(x=avg_log2FC,y=cors, color = "red"))+xlim(-10, 10)+theme_classic()
 
@@ -328,7 +356,7 @@ ggplot(en.model.beta,aes(x=cors,y=s1))+geom_point()+
   theme_bw()+NoLegend()+theme_bw()+NoLegend()
 
 FeatureScatter(mcf10a,feature1 = "FLD004" ,feature2 = "HSP90AB1", slot = "data", group.by = "celltype", cols = c("#79A72C", "#1BB4B8"))
-FeatureScatter(mcf10a,feature1 = "FLD004" ,feature2 = "ACTB", slot = "data", group.by = "celltype")
+FeatureScatter(mcf10a,feature1 = "FLD004" ,feature2 = "DSCAM-AS1", slot = "data", group.by = "celltype")
 VlnPlot(mcf10a, features = "HSP90AB1", group.by = "celltype")
 
 #====================================================================
