@@ -7,7 +7,6 @@ library(RCurl)
 library(Matrix)
 library(openxlsx)
 library(Seurat)
-library(SingleCellSignalR)
 library(seqinr)
 library(stringr)
 rdir <- "/home/samba/public/shintaku/github/ELASTomics/"
@@ -33,7 +32,7 @@ plot1 <- LabelPoints(plot = tig, points = top10)
 plot1
 
 # normalize the dtd data with "RC" option.
-#tig <- NormalizeData(tig,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
+tig <- NormalizeData(tig,assay="DTD",normalization.method = "CLR",scale.factor = 1e2)
 tig <- NormalizeData(tig,assay="ADT",normalization.method = "CLR",scale.factor = 1e2)
 #
 # PCA and visualize
@@ -85,6 +84,7 @@ tig4 <- RunPCA(tig4, npcs=20, features = VariableFeatures(object = tig))
 tig4 <- RunUMAP(tig4, dims = 1:19)
 DimPlot(tig4, reduction = "umap", label =TRUE, pt.size = 0.5, group.by = "Celltype") + NoLegend()
 tig <- tig4
+tig <- subset(tig,subset=nCount_RNA < 60000)
 #rm(tig1, tig2, tig12, tig3, tig4)
 
 #Gene expression
