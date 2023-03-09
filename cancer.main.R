@@ -148,6 +148,14 @@ mean(DTD40V_dtd$FLD010)
 mean(DTD40V_dtd$FLD070)
 mean(DTD40V_dtd$FLD500)
 write.table(DTD40V_dtd, file = str_c("/home/samba/public/shiomi/", "PC3", "_DTD.csv", sep = ""), append = F,sep = ",", row.names = F, quote = F)
+
+cancer.integrated[["DTDcon"]]<-cancer.integrated[["DTD"]]
+cancer.integrated[["DTDcon"]]@counts["FLD004",] <- cancer.integrated[["DTDcon"]]@counts["FLD004",]* (10000 / DTDcoc[1]) / (DTDmob[1] / 1E-07)
+cancer.integrated[["DTDcon"]]@counts["FLD010",] <- cancer.integrated[["DTDcon"]]@counts["FLD010",]* (10000 / DTDcoc[2]) / (DTDmob[2] / 1E-07)
+cancer.integrated[["DTDcon"]]@counts["FLD070",] <- cancer.integrated[["DTDcon"]]@counts["FLD070",]* (10000 / DTDcoc[4]) / (DTDmob[4] / 1E-07)
+cancer.integrated[["DTDcon"]]@counts["FLD500",] <- cancer.integrated[["DTDcon"]]@counts["FLD500",]* (10000 / DTDcoc[6]) / (DTDmob[6] / 1E-07)
+FeatureScatter(subset(subset(cancer.integrated, subset=NEP=="40V"), subset=run=="sixth", invert = TRUE), feature1 = "dtdcon_FLD004" ,feature2 = "dtdcon_FLD500", ,group.by = "celltype", slot = "count")+ylim(0,200000)
+
 rm(DTDcoc, DTDmob, DTD40V, DTD40V_dtd, DTD40V_dtd_melt)
 
 source("cancer.integrated.R")
