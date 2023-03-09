@@ -149,7 +149,6 @@ mean(DTD40V_dtd$FLD070)
 mean(DTD40V_dtd$FLD500)
 write.table(DTD40V_dtd, file = str_c("/home/samba/public/shiomi/", "PC3", "_DTD.csv", sep = ""), append = F,sep = ",", row.names = F, quote = F)
 
-
 cancer.integrated[["DTDcon"]]<-cancer.integrated[["DTD"]]
 cancer.integrated[["DTDcon"]]@counts["FLD004",] <- cancer.integrated[["DTDcon"]]@counts["FLD004",]* (10000 / DTDcoc[1]) / (DTDmob[1] / 1E-07)
 cancer.integrated[["DTDcon"]]@counts["FLD010",] <- cancer.integrated[["DTDcon"]]@counts["FLD010",]* (10000 / DTDcoc[2]) / (DTDmob[2] / 1E-07)
