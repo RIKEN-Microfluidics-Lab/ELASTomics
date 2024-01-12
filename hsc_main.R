@@ -10,10 +10,10 @@ library(Seurat)
 library(seqinr)
 library(stringr)
 rdir <- "/home/samba/public/shintaku/github/ELASTomics/"
-#
+
 # load ELASTomics data from an output of cellranger with cite-seq pipeline
-#
 source("elast.load.elast.data.R")
+
 # control data
 wdir <- "/home/samba/sanger/shintaku/ELASTomics/20220719HiSeqX014_10x/mhsc_1_14c_2/outs/filtered_feature_bc_matrix/"
 tig <-load.elast.data(wdir,"NEP-",100)
@@ -86,6 +86,10 @@ DimPlot(tig4, reduction = "umap", label =TRUE, pt.size = 0.5, group.by = "Cellty
 tig <- tig4
 tig <- subset(tig,subset=nCount_RNA < 60000)
 #rm(tig1, tig2, tig12, tig3, tig4)
+dim(tig)
+summary(tig$nCount_RNA)
+summary(tig$nFeature_RNA)
+as.data.frame(tig[["Celltype"]]) %>% dplyr::count(Celltype) 
 
 #Gene expression
 FeaturePlot(tig,features = c("Camp", "Chil3","Mmp9"),reduction="umap", ncol = 3) #Granulocyte
@@ -176,6 +180,104 @@ ggplot(cors,aes(x=rank,y=cors,label=gene))+geom_point()+
 #egoGo
 library(clusterProfiler)
 library(org.Mm.eg.db)
+#symbol2entrez<-function(gene.symbol){
+#  SYBOL2EG<-as.data.frame(unlist(org.Mm.egSYMBOL2EG))
+#  gene.list <- SYBOL2EG[SYBOL2EG$symbol %in% gene.symbol,]
+#  gene.list<-gene.list[!is.na(gene.list$gene_id),]
+#  return(gene.list)
+#}
+symbol2entrez.order <- function(genes){
+  SYBOL2EG<-as.data.frame(unlist(org.Mm.egSYMBOL2EG))
+  gene.list <- SYBOL2EG[SYBOL2EG$symbol %in% rownames(genes),]
+  gene.list<-gene.list[!is.na(gene.list$gene_id),]
+  gene.list <- gene.list[!duplicated(gene.list$symbol),]
+  #geneset <- genemap[!duplicated(genemap[,1]), 2]
+  rownames(gene.list) <- gene.list$symbol
+  gene.list$s0 <- genes[gene.list$symbol,1] #correlation
+  gene.list <- gene.list[,c(1,3)]
+  gene_list_order<- unlist(gene.list$s0)
+  names(gene_list_order) <-as.character(gene.list$gene_id)
+  gene_list_order <- gene_list_order[order(gene.list$s0,decreasing = T)]
+  return(gene_list_order)
+}
+gene_list_log2fc_cor <- symbol2entrez.order(cors)
+gse_result_cor<- gseGO(geneList     = gene_list_log2fc_cor,
+                       OrgDb        = org.Mm.eg.db,
+                       ont          = "MF",
+                       minGSSize    = 12,
+                       pAdjustMethod = "BH",
+                       pvalueCutoff = 0.05,
+                       verbose      = FALSE)
+View(gse_result_cor@result)
+ridgeplot(gse_result_cor,showCategory = 70)
+
+g1 <- gseaplot(gse_result_cor, by = "runningScore", geneSetID = "GO:0030507") #spectrin binding
+g2 <- gseaplot(gse_result_cor, by = "runningScore", geneSetID = "GO:0016887") #ATP hydrolysis activity
+g3 <- gseaplot(gse_result_cor, by = "runningScore", geneSetID = "GO:0003779") #actin binding
+g4 <- gseaplot(gse_result_cor, by = "runningScore", geneSetID = "GO:0140657") #ATP-dependent activity
+gridExtra::grid.arrange(g3, g4, nrow = 2) 
+
+
+
+
+MCF7 <- FindMarkers(tig1, group.by="Celltype", ident.1 = c("0HSC", "1MPP", "2CMP"), ident.2 = c("3EryP/MEP", "4Erythroid", "5Erythrocyte"), min.pct = 0.25, logfc.threshold = 0)
+MCF7$gene <- rownames(MCF7)
+rownames(MCF7) <- MCF7$gene 
+symbol2entrez.order <- function(genes){
+  SYBOL2EG<-as.data.frame(unlist(org.Mm.egSYMBOL2EG))
+  gene.list <- SYBOL2EG[SYBOL2EG$symbol %in% rownames(genes),]
+  gene.list<-gene.list[!is.na(gene.list$gene_id),]
+  gene.list <- gene.list[!duplicated(gene.list$symbol),]
+  #geneset <- genemap[!duplicated(genemap[,1]), 2]
+  rownames(gene.list) <- gene.list$symbol
+  gene.list$s0 <- genes[gene.list$symbol,2] #foldchange
+  gene.list <- gene.list[,c(1,3)]
+  gene_list_order<- unlist(gene.list$s0)
+  names(gene_list_order) <-as.character(gene.list$gene_id)
+  gene_list_order <- gene_list_order[order(gene.list$s0,decreasing = T)]
+  return(gene_list_order)
+}
+gene_list_log2fc_fol <- symbol2entrez.order(MCF7)  
+gse_result_fol<- gseGO(geneList     = gene_list_log2fc_fol,
+                       OrgDb        = org.Mm.eg.db,
+                       ont          = "MF",
+                       minGSSize    = 12,
+                       pAdjustMethod = "BH",
+                       pvalueCutoff = 0.05,
+                       verbose      = FALSE)
+View(gse_result_fol@result)
+
+
+dotplot(gse_result_cor,showCategory = 12)
+dotplot(gse_result_fol,showCategory = 12)
+GSEA_cor <- gse_result_cor@result
+GSEA_cor <- GSEA_cor[GSEA_cor$p.adjust < 0.05, ]
+GSEA_cor <- GSEA_cor[,c(1, 2, 4)]
+colnames(GSEA_cor) <- c("ID", "Description", "Cor_Score")
+GSEA_fol <- gse_result_fol@result
+GSEA_fol <- GSEA_fol[GSEA_fol$p.adjust < 0.05, ]
+GSEA_fol <- GSEA_fol[,c(1, 2, 4)]
+colnames(GSEA_fol) <- c("ID", "Description", "Fol_Score")
+GSEA_full <- full_join(x = GSEA_cor, y= GSEA_fol, by = "ID")
+GSEA_full[is.na(GSEA_full)] <- 0
+GSEA_full[GSEA_full$Description.x == 0,2] <- GSEA_full[GSEA_full$Description.x == 0,4]
+rownames(GSEA_full) <- GSEA_full$ID
+GSEA_full <- GSEA_full[,c(2, 3, 5)]
+for (d in 1:nrow(GSEA_full)){
+  name <- rownames(GSEA_full)[d]
+  GSEA_full[d,] <- c(GSEA_full[d,1], gse_result_cor@result[name, 4], gse_result_fol@result[name, 4])
+}
+rm(d, name)
+GSEA_full[is.na(GSEA_full)] <- 0
+rownames(GSEA_full) <- GSEA_full$Description.x
+GSEA_full <- GSEA_full[,c(2, 3)]
+GSEA_full[, 1] <- as.numeric(GSEA_full[, 1])
+GSEA_full[, 2] <- as.numeric(GSEA_full[, 2])
+GSEA_full <- as.matrix(GSEA_full)
+pheatmap::pheatmap(t(GSEA_full))
+#
+#enrichGo
+#
 symbol2entrez<-function(gene.symbol){
   SYBOL2EG<-as.data.frame(unlist(org.Mm.egSYMBOL2EG))
   gene.list <- SYBOL2EG[SYBOL2EG$symbol %in% gene.symbol,]
@@ -185,18 +287,18 @@ symbol2entrez<-function(gene.symbol){
 gene <- symbol2entrez(rownames(cors.sig))
 ego_result <- enrichGO(gene          = gene$gene_id, 
                        OrgDb         = org.Mm.eg.db,
-                       ont           = "BP",
+                       ont           = "MF",
                        pAdjustMethod = "BH",
                        pvalueCutoff  = 0.05,
                        qvalueCutoff  = 0.05, 
                        readable      = TRUE)
 head(as.data.frame(ego_result))
 barplot(ego_result, drop=TRUE)
-View(data.frame(ego_result))
-#ego2 <- simplify(ego_result)
-#cnetplot(ego2, showCategory = 20, foldChange = NULL, layout = "kk")
 
 
+
+
+#
 ego_gene <- c("Ank1", "Cpox", "Spta1", "Sptb", "Uros", "Blvrb", "Actg1", "Arhgdib", "Arpc1b", "Tmsb10", "S100a10", "Gmfg", "Arpc2")
 cors$bool <- FALSE
 cors[cors$gene %in% ego_gene,]$bool<-TRUE
