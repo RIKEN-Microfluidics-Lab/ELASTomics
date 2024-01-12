@@ -120,10 +120,17 @@ p10<-VlnPlot(tig.bulk.seurat, features = "LINC02029",group.by = "PDL")+ylim(c(0,
 gridExtra::grid.arrange(p1, p2,p3, p4, p5, p6,p7,p8,p9,p10,nrow = 2)
 rm(p1, p2,p3, p4, p5, p6,p7,p8,p9,p10)
 
-VlnPlot(tig.bulk.seurat, features = c("RRAD") ,group.by = "PDL", pt.size=4)+
-  scale_fill_manual(values = c("#D55E00","#eab676","#1e81b0","#0072B2"))+NoLegend()
-VlnPlot(tig.bulk.seurat, features = c("KLF2") ,group.by = "PDL", pt.size=4)+
-  scale_fill_manual(values = c("#D55E00","#eab676","#1e81b0","#0072B2"))+NoLegend()
+VlnPlot(tig.bulk.seurat, features = c("RRAD") ,group.by = "PDL", pt.size=0)+
+  scale_fill_manual(values = c("#D55E00","#eab676","#1e81b0","#0072B2"))+NoLegend()+
+  geom_dotplot(binaxis = "y", stackdir = "center", dotsize = 1, , fill="black")
+
+VlnPlot(tig.bulk.seurat, features = c("KLF2") ,group.by = "PDL", pt.size=0)+
+  scale_fill_manual(values = c("#D55E00","#eab676","#1e81b0","#0072B2"))+NoLegend()+
+  geom_dotplot(binaxis = "y", stackdir = "center", dotsize = 1, , fill="black")
+
+VlnPlot(tig.bulk.seurat, features = c("AC") ,group.by = "PDL", pt.size=0)+
+  scale_fill_manual(values = c("#D55E00","#eab676","#1e81b0","#0072B2"))+NoLegend()+
+  geom_dotplot(binaxis = "y", stackdir = "center", dotsize = 1, , fill="black")
 
 FACS <- tig.bulk.seurat
 FACS1 <-cbind(data.frame(FACS[["RNA"]]@data["RPL22L1",]), data.frame(FACS[["PDL"]]))
