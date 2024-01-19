@@ -27,21 +27,20 @@ To download the data analysis code, git clone using the following command:
 DEMO＿ELASTomics.R outputs figures corresconding to Figs. 3b-g, and Supplementary Fig. 12 in the manuscript of Shiomi et al. (2024).
 
 Expected outputs are commented as corresponding figure numbers at the end of each analysis code.
-
 Execution of all analyses takes less than a few days.
-SCENIC analysis takes the most time.
 
 The code is released under the GNU Public License (GPL 3.0).
 
 ### 10x format data
 
-10x format to be loaded in Seurat is available from https://riken-share.ent.box.com/s/r7noivs3qn33y1etalbr4lx9v0mltga8.
+10x format to be loaded in Seurat is available from 
+https://riken-share.box.com/s/kqa48i5jdpm0jiwg0zgastmaw2s3x6wz
 The directories correspond to the respective samples as follows:
 
 
-- TIG1-C: 10x data of none-electroporated TIG-1 cells (PDL = 42, 59)
+- CTRL: 10x data of none-electroporated TIG-1 cells (PDL = 42, 59)
 
-- TIG1-C: 10x data of electroporated TIG-1 cells (PDL = 42, 59)
+- EP: 10x data of electroporated TIG-1 cells (PDL = 42, 59)
 
 
 ## Raw sequence data

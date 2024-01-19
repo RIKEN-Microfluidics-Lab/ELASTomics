@@ -343,59 +343,59 @@ ggplot(en.model.beta, aes(x = cors, y = s1, label = gene))+geom_point()+theme_bw
 
 
 
-#
-# re-scale the dtd data with the concentration of the dtd molecules in the solution
+# #
+# # re-scale the dtd data with the concentration of the dtd molecules in the solution
+# # 
+# source("elast.rescale.dtd.R")
+# # FLD004,FLD010,FLD040,FLD070,FLD150,FLD500, and others
+# tig.combined.nep <- NormalizeData(tig.combined.nep,assay="DTD",normalization.method = "RC",scale.factor = 1e2)
+# concentration<- data.frame(c(2,6,9,3,9,3,1,1,1,1,1,1,1))
+# tig.combined.nep<-rescale.dtd.data(tig.combined.nep,concentration)
 # 
-source("elast.rescale.dtd.R")
-# FLD004,FLD010,FLD040,FLD070,FLD150,FLD500, and others
-tig.combined.nep <- NormalizeData(tig.combined.nep,assay="DTD",normalization.method = "RC",scale.factor = 1e2)
-concentration<- data.frame(c(2,6,9,3,9,3,1,1,1,1,1,1,1))
-tig.combined.nep<-rescale.dtd.data(tig.combined.nep,concentration)
-
-tig.dtd.scale<-tig.combined.nep[["DTD"]]@data
-#tig.dtd.scale <- tig.dtd.scale[c("FLD004","FLD010","FLD070","FLD500"),]
-
-
-#
-# compute a radius for a single case
-source("elast.comp.radii.R")
-#
-# S.radii: input Stokes radii of DTD
-# tig.dtd.scale; scaled amount of DTD imported to cells
-# The nrow of the tig.dtd.scale must match with the length of S.radii
-#
-S.radii <- c(1.4e-9, 2.3e-9, 4.5e-9, 6.3e-9, 8.5e-9, 15.1e-9) # Stokes radii of DTD
-
-#S.radii <- c(1.4e-9, 2.4e-9, 1.4e-9, 1.4e-9, 1.4e-9, 1.4e-9)
-#fm <-elast.comp.radius(tig.dtd.scale[1:4,"NEP-CCCTTAGGTCAAACGG"],S.radii,TRUE)
-#
-# compute radii for multiple cases
-res<-elast.comp.radii(tig.dtd.scale[1:4,],S.radii,TRUE)
-Res <- res[[1]]
-dtd.predict<-res[[2]]
-#
-# integrate elast result into Seurat object
+# tig.dtd.scale<-tig.combined.nep[["DTD"]]@data
+# #tig.dtd.scale <- tig.dtd.scale[c("FLD004","FLD010","FLD070","FLD500"),]
 # 
-
-source("elast.integrated.R")
-
-#
-# extract explanatory variables via glmnet
-#
-source("elast.glmnet.R")
-en.model.nonzero.beta <- subset(en.model.beta, subset=abs(s0)>0.001)
-#source("elast.biomaRt.R")
-en.model.plus.beta <- subset(en.model.beta, subset=s0> 0.001)
-en.model.minus.beta <- subset(en.model.beta, subset=s0< -0.001)
-
-source(file.path(rdir,"elast.integrated.cor.visualize.R"))
-
-source(file.path(rdir,"elast.integrated.cor.R"))
-
-source(file.path(rdir,"elast.integrated.cor.visualize.R"))
-
-source(file.path(rdir,"elast.integrated.cor.diffusionmap.R"))
-
- source("elast.integrate.data.R")
-
-
+# 
+# #
+# # compute a radius for a single case
+# source("elast.comp.radii.R")
+# #
+# # S.radii: input Stokes radii of DTD
+# # tig.dtd.scale; scaled amount of DTD imported to cells
+# # The nrow of the tig.dtd.scale must match with the length of S.radii
+# #
+# S.radii <- c(1.4e-9, 2.3e-9, 4.5e-9, 6.3e-9, 8.5e-9, 15.1e-9) # Stokes radii of DTD
+# 
+# #S.radii <- c(1.4e-9, 2.4e-9, 1.4e-9, 1.4e-9, 1.4e-9, 1.4e-9)
+# #fm <-elast.comp.radius(tig.dtd.scale[1:4,"NEP-CCCTTAGGTCAAACGG"],S.radii,TRUE)
+# #
+# # compute radii for multiple cases
+# res<-elast.comp.radii(tig.dtd.scale[1:4,],S.radii,TRUE)
+# Res <- res[[1]]
+# dtd.predict<-res[[2]]
+# #
+# # integrate elast result into Seurat object
+# # 
+# 
+# source("elast.integrated.R")
+# 
+# #
+# # extract explanatory variables via glmnet
+# #
+# source("elast.glmnet.R")
+# en.model.nonzero.beta <- subset(en.model.beta, subset=abs(s0)>0.001)
+# #source("elast.biomaRt.R")
+# en.model.plus.beta <- subset(en.model.beta, subset=s0> 0.001)
+# en.model.minus.beta <- subset(en.model.beta, subset=s0< -0.001)
+# 
+# source(file.path(rdir,"elast.integrated.cor.visualize.R"))
+# 
+# source(file.path(rdir,"elast.integrated.cor.R"))
+# 
+# source(file.path(rdir,"elast.integrated.cor.visualize.R"))
+# 
+# source(file.path(rdir,"elast.integrated.cor.diffusionmap.R"))
+# 
+#  source("elast.integrate.data.R")
+# 
+# 

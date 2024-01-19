@@ -85,7 +85,7 @@ ggplot(cors,aes(x=rank,y=cors,label=gene))+geom_point()+
 
 
 #GseGo
-MCF7 <- FindMarkers(tig.combined.nep,ident.1 = "TIG1-50",ident.2 = "TIG1-20", test.use = "wilcox", , min.pct = 0.25, logfc.threshold = 0)
+MCF7 <- FindMarkers(tig.combined.nep,ident.1 = "TIG1-50",ident.2 = "TIG1-20", test.use = "wilcox", min.pct = 0.25, logfc.threshold = 0)
 MCF7$gene <- rownames(MCF7)
 MCF7 <- inner_join(MCF7, cors, by="gene")
 rownames(MCF7) <- MCF7$gene 
@@ -111,45 +111,45 @@ ggplot(TIG1,aes(x=avg_log2FC, y=cors))+geom_point()+
 
 
 
-# re-scale the dtd data with the concentration of the dtd molecules in the solution
-source("elast.rescale.dtd.R")
-# FLD004,FLD010,FLD040,FLD070,FLD150,FLD500, and others
-tig.combined.nep <- NormalizeData(tig.combined.nep,assay="DTD",normalization.method = "RC",scale.factor = 1e2)
-concentration<- data.frame(c(2,6,9,3,9,3,1,1,1,1,1,1,1))
-tig.combined.nep<-rescale.dtd.data(tig.combined.nep,concentration)
-tig.dtd.scale<-tig.combined.nep[["DTD"]]@data
-#tig.dtd.scale <- tig.dtd.scale[c("FLD004","FLD010","FLD070","FLD500"),]
-# compute a radius for a single case
-source("elast.comp.radii.R")
-#
-# S.radii: input Stokes radii of DTD
-# tig.dtd.scale; scaled amount of DTD imported to cells
-# The nrow of the tig.dtd.scale must match with the length of S.radii
-#
-S.radii <- c(4.1e-9, 4.2e-9, 7.8e-9, 10.6e-9, 15.1e-9, 17.0e-9) # Stokes radii of DTD
-#S.radii <- c(1.4e-9, 2.4e-9, 1.4e-9, 1.4e-9, 1.4e-9, 1.4e-9)
-#fm <-elast.comp.radius(tig.dtd.scale[1:4,"NEP-CCCTTAGGTCAAACGG"],S.radii,TRUE)
-#
-# compute radii for multiple cases
-res<-elast.comp.radii(tig.dtd.scale[1:4,],S.radii,TRUE)
-Res <- res[[1]]
-dtd.predict<-res[[2]]
-#
-# extract explanatory variables via glmnet
-#
-
-
-
-
-
-en.model.nonzero.beta <- subset(en.model.beta, subset=abs(s0)>0.001)
-#source("elast.biomaRt.R")
-en.model.plus.beta <- subset(en.model.beta, subset=s0> 0.001)
-en.model.minus.beta <- subset(en.model.beta, subset=s0< -0.001)
-
-
-
-source(file.path(rdir,"elast.integrated.cor.diffusionmap.R"))
+# # re-scale the dtd data with the concentration of the dtd molecules in the solution
+# source("elast.rescale.dtd.R")
+# # FLD004,FLD010,FLD040,FLD070,FLD150,FLD500, and others
+# tig.combined.nep <- NormalizeData(tig.combined.nep,assay="DTD",normalization.method = "RC",scale.factor = 1e2)
+# concentration<- data.frame(c(2,6,9,3,9,3,1,1,1,1,1,1,1))
+# tig.combined.nep<-rescale.dtd.data(tig.combined.nep,concentration)
+# tig.dtd.scale<-tig.combined.nep[["DTD"]]@data
+# #tig.dtd.scale <- tig.dtd.scale[c("FLD004","FLD010","FLD070","FLD500"),]
+# # compute a radius for a single case
+# source("elast.comp.radii.R")
+# #
+# # S.radii: input Stokes radii of DTD
+# # tig.dtd.scale; scaled amount of DTD imported to cells
+# # The nrow of the tig.dtd.scale must match with the length of S.radii
+# #
+# S.radii <- c(4.1e-9, 4.2e-9, 7.8e-9, 10.6e-9, 15.1e-9, 17.0e-9) # Stokes radii of DTD
+# #S.radii <- c(1.4e-9, 2.4e-9, 1.4e-9, 1.4e-9, 1.4e-9, 1.4e-9)
+# #fm <-elast.comp.radius(tig.dtd.scale[1:4,"NEP-CCCTTAGGTCAAACGG"],S.radii,TRUE)
+# #
+# # compute radii for multiple cases
+# res<-elast.comp.radii(tig.dtd.scale[1:4,],S.radii,TRUE)
+# Res <- res[[1]]
+# dtd.predict<-res[[2]]
+# #
+# # extract explanatory variables via glmnet
+# #
+# 
+# 
+# 
+# 
+# 
+# en.model.nonzero.beta <- subset(en.model.beta, subset=abs(s0)>0.001)
+# #source("elast.biomaRt.R")
+# en.model.plus.beta <- subset(en.model.beta, subset=s0> 0.001)
+# en.model.minus.beta <- subset(en.model.beta, subset=s0< -0.001)
+# 
+# 
+# 
+# source(file.path(rdir,"elast.integrated.cor.diffusionmap.R"))
 
 #GSEA
 exp.matrix <- t(data.frame(tig.combined.nep [["RNA"]]@data))
