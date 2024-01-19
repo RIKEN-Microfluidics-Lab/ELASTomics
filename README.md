@@ -42,5 +42,9 @@ This program is linked to the following code:
 - unused/preprocess/preprocess_save_10x_format.R
 
 
+## index sorting
+index.sort.R outputs figures corresconding to Supplementary Fig. 4b-d in the manuscript of Shiomi et al. (2024).
+
+
 ## AFM analysis
 AFManalysis_TIG-1.R and AFManalysis_MCF10A.R outputs figures corresconding to Figs. 1d and Supplementary Fig. 4f-i, 11d in the manuscript of Shiomi et al. (2024).
