@@ -52,3 +52,4 @@ FACS_analysis.R outputs figures corresconding to Figure 3j-l, Supplementary Fig.
 
 ## AFM analysis
 AFManalysis_TIG-1.R and AFManalysis_MCF10A.R outputs figures corresconding to Figs. 1d and Supplementary Fig. 4f-i, 11d in the manuscript of Shiomi et al. (2024).
+All fluorescence-activated cell sorting (FACS) data have been deposited on the "FACS_data" file.

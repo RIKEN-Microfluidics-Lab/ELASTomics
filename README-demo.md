@@ -46,7 +46,3 @@ The directories correspond to the respective samples as follows:
 
 ## Raw sequence data
  All demultiplexed sequencing data have been deposited on the Sequencing Read Archive and are available for download under accession PRJNA841462.
- 
-
-## FACS data
- All fluorescence-activated cell sorting (FACS) data have been deposited on the "FACS_data" file.
