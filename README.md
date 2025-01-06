@@ -2,13 +2,6 @@
 ELASTomics (electroporation-based lipid bilayer assay for surface tension and transcriptomics) is an approach for profiling the physical properties of plasma membranes and gene expression of single cells. To use this package, you will need the R statistical computing environment and several packages available through Bioconductor and CRAN.
 
 
-## Device for ELASTomics
-ELASTomics_Chamber.blend 
-(ELASTomics/ELASTomics_Chamber.jpg)
-ELASTomics_Device.blend
-
-
-
 ## ELASTomics for Cancer cell line
 cancer.main.R outputs figures corresconding to Figs. 1b, c, e, g-l, and Supplementary Fig. 3c-g, 3s-u, 6a-c, 7b-i, 8a-d in the manuscript of Shiomi et al. (2024).
 This program is linked to the following code:
@@ -60,4 +53,16 @@ All fluorescence-activated cell sorting (FACS) data have been deposited on the "
 
 ## AFM analysis
 AFManalysis_TIG-1.R and AFManalysis_MCF10A.R outputs figures corresconding to Figs. 1d and Supplementary Fig. 4f-i, 11d in the manuscript of Shiomi et al. (2024).
+
+
+## Device for ELASTomics
+### PDMS chamber
+![Image 1](ELASTomics_Chamber.jpg)
+ELASTomics_Chamber.blend is a CAD used to create PDMS chambers　in the manuscript of Shiomi et al. (2024). After molding by pouring PDMS, holes are punched using an 8 mm biopsy punch. Then, a track-etched membrane cut to the appropriate size is attached to the bottom using PDMS glue.
+
+### Device for Nanopore-electroporation
+![Image 2](ELASTomics_Device.jpg)
+ELASTomics_Device.blend is a device for Nanopore-electroporation　in the manuscript of Shiomi et al. (2024). After printing with a 3D printer, Pt electrodes of the appropriate size are fitted, and wires are connected and fixed with PDMS.
+
+
 
