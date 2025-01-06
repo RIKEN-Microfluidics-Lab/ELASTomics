@@ -58,11 +58,11 @@ AFManalysis_TIG-1.R and AFManalysis_MCF10A.R outputs figures corresconding to Fi
 ## Device for ELASTomics
 ### PDMS chamber
 ![Image 1](ELASTomics_Chamber.jpg)
-ELASTomics_Chamber.blend is a CAD used to create PDMS chambers　in the manuscript of Shiomi et al. (2024). After molding by pouring PDMS, holes are punched using an 8 mm biopsy punch. Then, a track-etched membrane cut to the appropriate size is attached to the bottom using PDMS glue.
+ELASTomics_Chamber.blend is a CAD used to create PDMS chambers in the manuscript of Shiomi et al. (2024). After molding by pouring PDMS, holes are punched using an 8 mm biopsy punch. Then, a track-etched membrane cut to the appropriate size is attached to the bottom using PDMS glue.
 
 ### Device for Nanopore-electroporation
 ![Image 2](ELASTomics_Device.jpg)
-ELASTomics_Device.blend is a device for Nanopore-electroporation　in the manuscript of Shiomi et al. (2024). After printing with a 3D printer, Pt electrodes of the appropriate size are fitted, and wires are connected and fixed with PDMS.
+ELASTomics_Device.blend is a device for Nanopore-electroporation in the manuscript of Shiomi et al. (2024). After printing with a 3D printer, Pt electrodes of the appropriate size are fitted, and wires are connected and fixed with PDMS.
 
 
 
