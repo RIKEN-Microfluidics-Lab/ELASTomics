@@ -62,7 +62,7 @@ ELASTomics_Chamber.blend is a CAD used to create PDMS chambers in the manuscript
 
 ### Device for Nanopore-electroporation
 ![Image 2](ELASTomics_Device.jpg)
-ELASTomics_Device.blend is a device for Nanopore-electroporation in the manuscript of Shiomi et al. (2024). After printing with a 3D printer, Pt electrodes of the appropriate size are fitted, and wires are connected and fixed with PDMS.
+ELASTomics_Device.blend is a CAD used to create the device for Nanopore-electroporation in the manuscript of Shiomi et al. (2024). After printing with a 3D printer, Pt electrodes of the appropriate size are fitted, and wires are connected and fixed with PDMS.
 
 
 
