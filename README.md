@@ -2,6 +2,12 @@
 ELASTomics (electroporation-based lipid bilayer assay for surface tension and transcriptomics) is an approach for profiling the physical properties of plasma membranes and gene expression of single cells. To use this package, you will need the R statistical computing environment and several packages available through Bioconductor and CRAN.
 
 
+## Device for ELASTomics
+ELASTomics_Chamber.blend 
+ELASTomics_Device.blend
+
+
+
 ## ELASTomics for Cancer cell line
 cancer.main.R outputs figures corresconding to Figs. 1b, c, e, g-l, and Supplementary Fig. 3c-g, 3s-u, 6a-c, 7b-i, 8a-d in the manuscript of Shiomi et al. (2024).
 This program is linked to the following code:
