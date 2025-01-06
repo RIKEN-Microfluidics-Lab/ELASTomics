@@ -4,6 +4,7 @@ ELASTomics (electroporation-based lipid bilayer assay for surface tension and tr
 
 ## Device for ELASTomics
 ELASTomics_Chamber.blend 
+(ELASTomics/ELASTomics_Chamber.jpg)
 ELASTomics_Device.blend
 
 
